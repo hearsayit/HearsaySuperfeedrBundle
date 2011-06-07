@@ -37,37 +37,15 @@ class Subscriber
      * @var JaxlFactory
      */
     protected $jaxlFactory = null;
-
     /**
      * @var string
      */
     protected $recipient = null;
-    
+
     public function __construct(JaxlFactory $jaxlFactory, $recipient = 'firehoser.superfeedr.com', $defaultDigest = false)
     {
         $this->jaxlFactory = $jaxlFactory;
         $this->recipient = $recipient;
-    }
-
-    protected function submitRequest($payload)
-    {
-        $jaxl = $this->jaxlFactory->createInstance();
-        
-        $recipient = $this->recipient;
-
-        \JAXL0060::init($jaxl);
-        \JAXL0060::subscribe($jaxl, $recipient, 'kmontag@superfeedr.com', 'http://superfeedr.com/dummy.xml');
-        
-        /*
-        $jaxl->addPlugin('jaxl_post_auth', function($unused, $jaxl) use ($payload, $recipient) {
-            $jaxl->sendIQ('set', $payload, $recipient, 'kmontag@superfeedr.com', function ($response, $jaxl) {
-                print_r($response);
-            });
-        });
-        
-        $jaxl->startCore('stream');
-         * 
-         */
     }
 
     /**
@@ -76,13 +54,18 @@ class Subscriber
      * @param bool|null $digest Whether to subscribe for digest updates on the
      * resources, or null to use the digest default provided at construction.
      */
-    public function subscribe($url) {
-        $payload = <<<PAY
- <pubsub xmlns="http://jabber.org/protocol/pubsub" xmlns:superfeedr="http://superfeedr.com/xmpp-pubsub-ext">
-  <subscribe node="http://superfeedr.com/dummy.xml" jid="kmontag@superfeedr.com"/>    
- </pubsub>
-PAY;
-        $this->submitRequest($payload);
+    public function subscribe($url, $digest)
+    {
+        $jaxl = $this->jaxlFactory->createInstance();
+
+        $recipient = $this->recipient;
+
+        \JAXL0060::init($jaxl);
+        $jaxl->addPlugin('jaxl_post_auth', function($unused, $jaxl) use ($payload, $recipient) {
+                    \JAXL0060::subscribe($jaxl, $recipient, 'kmontag@superfeedr.com', $url);
+                });
+
+        $jaxl->startCore('stream');
     }
 
 }
