@@ -22,10 +22,32 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle;
+namespace Hearsay\SuperfeedrBundle\Tests\Subscription;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Hearsay\SuperfeedrBundle\Subscription\Subscriber;
+use Liip\FunctionalTestBundle\Test\WebTestCase;
 
-class HearsaySuperfeedrBundle extends Bundle
+/**
+ * Unit and functional tests for the feed subscriber.
+ * @author Kevin Montag <kevin@hearsay.it>
+ */
+class SubscriberTest extends WebTestCase
 {
+    /**
+     * Get the configured subscriber service.
+     * @return Subscriber The subscriber.
+     */
+    protected function getSubscriber() {
+        return $this->getContainer()->get('hearsay_superfeedr.subscriber');
+    }
+    
+    /**
+     * Make sure we can subscribe to, and then unsubscribe from, a feed via
+     * Superfeedr.
+     * @covers Hearsay\SuperfeedrBundle\Subscription\Subscriber
+     */
+    public function testSubscriptionAndUnsubscriptionPossible() {
+        $subscriber = $this->getSubscriber();
+        $subscriber->subscribe('hi');
+    }
 }
