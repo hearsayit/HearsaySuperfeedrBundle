@@ -24,6 +24,7 @@
 
 namespace Hearsay\SuperfeedrBundle\Subscription;
 
+use Hearsay\SuperfeedrBundle\Exception;
 use Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory;
 
 /**
@@ -41,31 +42,115 @@ class Subscriber
      * @var string
      */
     protected $recipient = null;
+    /**
+     * @var bool
+     */
+    protected $defaultDigest = null;
+    /**
+     * @var string
+     */
+    protected $pubSubXmlns = 'http://jabber.org/protocol/pubsub';
+    /**
+     * @var string
+     */
+    protected $superfeedrXmlns = 'http://superfeedr.com/xmpp-pubsub-ext';
 
+    /**
+     * Standard constructor.
+     * @param JaxlFactory $jaxlFactory Factory for creating JAXL instances.
+     * @param string $recipient Value of the 'to' attribute on subscribe and
+     * unsubscribe requests.
+     * @param bool $defaultDigest Whether to subscribe for digest notifications
+     * by default.
+     */
     public function __construct(JaxlFactory $jaxlFactory, $recipient = 'firehoser.superfeedr.com', $defaultDigest = false)
     {
         $this->jaxlFactory = $jaxlFactory;
         $this->recipient = $recipient;
+        $this->defaultDigest = $defaultDigest;
     }
 
     /**
-     * Subscribe to receive updates from the given resource.
-     * @param string $url The URL of the resource.
-     * @param bool|null $digest Whether to subscribe for digest updates on the
-     * resources, or null to use the digest default provided at construction.
+     * Helper function to avoid repetition for subscription and unsubscription.
+     * @param string $subscribeNode The name of the element describing a
+     * subscribe or unsubscribe request, e.g. 'subscribe' or 'unsubscribe'.
+     * @param string|array $urls The URL or URLs to subscribe/unsubscribe.
+     * @param bool $digest Whether to set the Superfeedr 'digest' attribute to
+     * true on the subscription tags.
      */
-    public function subscribe($url, $digest)
+    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest)
     {
+        // Always work with an array of URLs
+        if (!(\is_array($urls))) {
+            $urls = array($urls);
+        }
+
+        // Create a JAXL instance so we can get our JID
         $jaxl = $this->jaxlFactory->createInstance();
 
+        $dom = new \DOMDocument();
+
+        // Create the top-level payload tag
+        $pubsub = $dom->createElement('pubsub');
+        $pubsub->setAttribute('xmlns', $this->pubSubXmlns);
+        $pubsub->setAttribute('xmlns:superfeedr', $this->superfeedrXmlns);
+        $pubsub = $dom->appendChild($pubsub);
+
+        // Add subscription requests
+        foreach ($urls as $url) {
+            $subscribe = $dom->createElement($subscribeNode);
+            $subscribe->setAttribute('node', $url);
+            $subscribe->setAttribute('jid', $jaxl->bareJid);
+            if ($digest) {
+                $subscribe->setAttribute('superfeedr:digest', 'true');
+            }
+
+            $pubsub->appendChild($subscribe);
+        }
+
+        $payload = $dom->saveXML($pubsub);
         $recipient = $this->recipient;
+        $success = false;
 
-        \JAXL0060::init($jaxl);
-        $jaxl->addPlugin('jaxl_post_auth', function($unused, $jaxl) use ($payload, $recipient) {
-                    \JAXL0060::subscribe($jaxl, $recipient, 'kmontag@superfeedr.com', $url);
+
+        $jaxl->addPlugin('jaxl_post_auth', function($unused, $jaxl) use ($payload, $recipient, &$success) {
+                    // Send the subscription request
+                    $jaxl->sendIQ('set', $payload, $recipient, $jaxl->bareJid, function($response, \JAXL $jaxl) use (&$success) {
+                                if ($response['type'] === 'result') {
+                                    $success = true;
+                                }
+                                $jaxl->shutdown();
+                            });
                 });
+        $jaxl->start();
+        return $success;
+    }
 
-        $jaxl->startCore('stream');
+    /**
+     * Subscribe to receive updates from the given resource(s).
+     * @param string|array $urls The URL of the resource, or an array of URLs.
+     * @param bool|null $digest Whether to subscribe for digest updates on the
+     * resources, or null to use the digest default provided at construction.
+     * @return bool Whether the subscription request was successful.
+     */
+    public function subscribe($urls, $digest = null)
+    {
+        // Use the deault digest state if appropriate
+        if ($digest === null) {
+            $digest = $this->defaultDigest;
+        }
+
+        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
+    }
+
+    /**
+     * Unsubscribe from updates on the given resource(s).
+     * @param string|arrray $urls The URL of the resource, or an array of URLs.
+     * @return bool Whether the subscription request was successful.
+     */
+    public function unsubscribe($urls)
+    {
+        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
     }
 
 }

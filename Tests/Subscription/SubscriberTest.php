@@ -41,13 +41,32 @@ class SubscriberTest extends WebTestCase
         return $this->getContainer()->get('hearsay_superfeedr.subscriber');
     }
     
+    protected function setUp() {
+        // We can't do anything without an internet connection
+        try {
+            \fsockopen("www.google.com", 80);
+        } catch (\Exception $e) {
+            $this->markTestSkipped("Can't test XMPP without an internet connection.");
+        }        
+    }
+    
     /**
      * Make sure we can subscribe to, and then unsubscribe from, a feed via
-     * Superfeedr.
+     * Superfeedr.  Makes a live request to the Superfeedr server.
      * @covers Hearsay\SuperfeedrBundle\Subscription\Subscriber
      */
     public function testSubscriptionAndUnsubscriptionPossible() {
         $subscriber = $this->getSubscriber();
-        $subscriber->subscribe('hi');
+        $this->assertTrue($subscriber->subscribe('http://superfeedr.com/dummy.xml'));
+        $this->assertTrue($subscriber->unsubscribe('http://superfeedr.com/dummy.xml'));
+    }
+    
+    /**
+     * Make sure we can't subscribe to nonexistent resources.
+     * @covers Hearsay\SuperfeedrBundle\Subscription\Subscriber
+     */
+    public function testBadSubscriptionNotPossible() {
+        $subscriber = $this->getSubscriber();
+        $this->assertFalse($subscriber->subscribe('not a url at all'));
     }
 }

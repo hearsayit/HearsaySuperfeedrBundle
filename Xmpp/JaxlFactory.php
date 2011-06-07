@@ -81,11 +81,11 @@ class JaxlFactory
     /**
      * Get a JAXL connection instance initialized with our connection
      * parameters.
-     * @return \JAXL The instance.
+     * @return Jaxl The instance.
      */
     public function createInstance()
     {
-        return new \JAXL(array(
+        $jaxl = new Jaxl(array(
             'user' => $this->username,
             'pass' => $this->password,
             'domain' => $this->domain,
@@ -94,7 +94,11 @@ class JaxlFactory
             'logPath' => $this->logPath,
             'logLevel' => $this->logLevel,
             'authType' => 'PLAIN',
+            'mode' => 'cli',
         ));
+        $jaxl->requires('JAXL0060');
+        
+        return $jaxl;
     }
 
 }
