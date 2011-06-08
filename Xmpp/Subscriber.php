@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Subscription;
+namespace Hearsay\SuperfeedrBundle\Xmpp;
 
 use Hearsay\SuperfeedrBundle\Exception;
 use Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory;

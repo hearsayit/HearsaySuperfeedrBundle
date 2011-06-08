@@ -48,6 +48,10 @@ class JaxlFactory
      */
     protected $host = null;
     /**
+     * @var integer
+     */
+    protected $packetSize = null;
+    /**
      * @var string
      */
     protected $pidPath = null;
@@ -67,12 +71,13 @@ class JaxlFactory
      * @param string $domain The XMPP domain to use for login.
      * @param string $host The XMPP host to connect to.
      */
-    public function __construct($username, $password, $domain = 'superfeedr.com', $host = 'xmpp.superfeedr.com', $pidPath = '/var/run/jaxl.pid', $logPath = '/var/log/jaxl.log', $logLevel = 1)
+    public function __construct($username, $password, $domain = 'superfeedr.com', $host = 'xmpp.superfeedr.com', $packetSize = 16777216, $pidPath = '/var/run/jaxl.pid', $logPath = '/var/log/jaxl.log', $logLevel = 1)
     {
         $this->username = $username;
         $this->password = $password;
         $this->domain = $domain;
         $this->host = $host;
+        $this->packetSize = $packetSize;
         $this->pidPath = $pidPath;
         $this->logPath = $logPath;
         $this->logLevel = $logLevel;
@@ -93,6 +98,7 @@ class JaxlFactory
             'pidPath' => $this->pidPath,
             'logPath' => $this->logPath,
             'logLevel' => $this->logLevel,
+            'getPktSize' => $this->packetSize,
             'authType' => 'PLAIN',
             'mode' => 'cli',
         ));

@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Tests\Subscription;
+namespace Hearsay\SuperfeedrBundle\Tests\Xmpp;
 
-use Hearsay\SuperfeedrBundle\Subscription\Subscriber;
+use Hearsay\SuperfeedrBundle\Xmpp\Subscriber;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 
 /**
@@ -41,6 +41,9 @@ class SubscriberTest extends WebTestCase
         return $this->getContainer()->get('hearsay_superfeedr.subscriber');
     }
     
+    /**
+     * {@inheritdoc}
+     */
     protected function setUp() {
         // We can't do anything without an internet connection
         try {
@@ -53,17 +56,21 @@ class SubscriberTest extends WebTestCase
     /**
      * Make sure we can subscribe to, and then unsubscribe from, a feed via
      * Superfeedr.  Makes a live request to the Superfeedr server.
-     * @covers Hearsay\SuperfeedrBundle\Subscription\Subscriber
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\Subscriber
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\Jaxl
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory
      */
     public function testSubscriptionAndUnsubscriptionPossible() {
         $subscriber = $this->getSubscriber();
-        $this->assertTrue($subscriber->subscribe('http://superfeedr.com/dummy.xml'));
+        $this->assertTrue($subscriber->subscribe('http://superfeedr.com/dummy.xml'));        
         $this->assertTrue($subscriber->unsubscribe('http://superfeedr.com/dummy.xml'));
     }
     
     /**
      * Make sure we can't subscribe to nonexistent resources.
-     * @covers Hearsay\SuperfeedrBundle\Subscription\Subscriber
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\Subscriber
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\Jaxl
+     * @covers Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory
      */
     public function testBadSubscriptionNotPossible() {
         $subscriber = $this->getSubscriber();

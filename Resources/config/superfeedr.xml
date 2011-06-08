@@ -26,11 +26,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <parameters>
-        <parameter type="string" key="hearsay_superfeedr.subscriber.class">Hearsay\SuperfeedrBundle\Subscription\Subscriber</parameter>
+        <parameter type="string" key="hearsay_superfeedr.subscriber.class">Hearsay\SuperfeedrBundle\Xmpp\Subscriber</parameter>
+        <parameter type="string" key="hearsay_superfeedr.receiver.class">Hearsay\SuperfeedrBundle\Xmpp\Receiver</parameter>
         <parameter type="string" key="hearsay_superfeedr.username" />
         <parameter type="string" key="hearsay_superfeedr.password" />
         <parameter type="string" key="hearsay_superfeedr.domain">superfeedr.com</parameter>
         <parameter type="string" key="hearsay_superfeedr.host">xmpp.superfeedr.com</parameter>
+        <parameter key="hearsay_superfeedr.packet_size">16777216</parameter>
         <parameter type="string" key="hearsay_superfeedr.jaxl_pid_path">%kernel.cache_dir%/jaxl.pid</parameter>
         <parameter type="string" key="hearsay_superfeedr.jaxl_log_level" />
         <parameter type="string" key="hearsay_superfeedr.jaxl_log_path" />
@@ -45,15 +47,30 @@
             <argument type="string">%hearsay_superfeedr.password%</argument>
             <argument type="string">%hearsay_superfeedr.domain%</argument>
             <argument type="string">%hearsay_superfeedr.host%</argument>
+            <argument>%hearsay_superfeedr.packet_size%</argument>
             <argument type="string">%hearsay_superfeedr.jaxl_pid_path%</argument>
             <argument type="string">%hearsay_superfeedr.jaxl_log_path%</argument>
             <argument>%hearsay_superfeedr.jaxl_log_level%</argument>
+        </service>
+        <service
+            id="hearsay_superfeedr.event_handler"
+            class="Hearsay\SuperfeedrBundle\Handler\EventHandler"
+            public="false" >
+            <argument type="service" id="event_dispatcher" />
         </service>
         <service 
             id="hearsay_superfeedr.subscriber"
             class="%hearsay_superfeedr.subscriber.class%" >
             <argument type="service" id="hearsay_superfeedr.jaxl_factory" />
             <argument type="string">%hearsay_superfeedr.to%</argument>
+        </service>
+        <service
+            id="hearsay_superfeedr.receiver"
+            class="%hearsay_superfeedr.receiver.class%" >
+            <argument type="service" id="hearsay_superfeedr.jaxl_factory" />
+            <argument type="service" id="hearsay_superfeedr.event_handler" />
+            <argument type="service" id="logger" />
+            <tag name="monolog.logger" channel="superfeedr" />
         </service>
     </services>
 </container>

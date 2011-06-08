@@ -22,30 +22,17 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
-
-use Hearsay\SuperfeedrBundle\Exception\CouldNotConnectException;
+namespace Hearsay\SuperfeedrBundle\Handler;
 
 /**
- * JAXL subclass with a custom runner method which operates more cleanly than 
- * the built-in <code>startCore</code>
+ * Interface for classes which can receive and process XMPP notifications.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Jaxl extends \JAXL
+interface HandlerInterface
 {
-
     /**
-     * Connect and authenticate this instance in stream mode, and start 
-     * listening for messages until told to shut down.
+     * Process an XMPP message.
+     * @param string $payload The raw message content.
      */
-    public function start()
-    {
-        $this->addPlugin('jaxl_post_connect', array($this, 'startStream'));
-
-        $this->connect();
-        while ($this->stream) {
-            $this->getXML();
-        }
-    }
-
+    public function handleNotification($payload);
 }

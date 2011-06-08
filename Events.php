@@ -22,30 +22,13 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
-
-use Hearsay\SuperfeedrBundle\Exception\CouldNotConnectException;
+namespace Hearsay\SuperfeedrBundle;
 
 /**
- * JAXL subclass with a custom runner method which operates more cleanly than 
- * the built-in <code>startCore</code>
+ * Constants for events defined in the Superfeedr bundle.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Jaxl extends \JAXL
+final class Events
 {
-
-    /**
-     * Connect and authenticate this instance in stream mode, and start 
-     * listening for messages until told to shut down.
-     */
-    public function start()
-    {
-        $this->addPlugin('jaxl_post_connect', array($this, 'startStream'));
-
-        $this->connect();
-        while ($this->stream) {
-            $this->getXML();
-        }
-    }
-
+    const NOTIFICATION_RECEIVED = 'onNotificationReceived';
 }
