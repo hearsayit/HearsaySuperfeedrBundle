@@ -67,7 +67,8 @@ class SubscriberTest extends WebTestCase
     }
     
     /**
-     * Make sure we can't subscribe to nonexistent resources.
+     * Make sure we can't subscribe to nonexistent resources.  Makes a live
+     * request to the Superfeedr server.
      * @covers Hearsay\SuperfeedrBundle\Xmpp\Subscriber
      * @covers Hearsay\SuperfeedrBundle\Xmpp\Jaxl
      * @covers Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory

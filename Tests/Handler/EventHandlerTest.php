@@ -177,4 +177,64 @@ EXP;
         $items = $event->getItems();
         $this->assertXmlStringEqualsXmlString($expected, $items[2]);
     }
+    
+    /**
+     * Make sure we can properly parse digest events.
+     * @covers Hearsay\SuperfeedrBundle\Events
+     * @covers Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent
+     * @covers Hearsay\SuperfeedrBundle\Handler\EventHandler
+     */
+    public function testDigestParsed()
+    {
+        // Use a sample payload from the Superfeedr documentation
+        $payload = <<<XML
+ <event xmlns="http://jabber.org/protocol/pubsub#event">
+  <status feed="http://domain.tld/feed.xml" xmlns="http://superfeedr.com/xmpp-pubsub-ext" digest="true">
+   <http code="200">9718 bytes fetched in 1.462708s : 2 new entries.</http>
+   <next_fetch>2009-05-10T11:19:38-07:00</next_fetch>
+   <title>Lorem Ipsum</title>
+  </status>
+  <items node="http://domain.tld/feed.xml">
+   <item >
+    <entry xmlns="http://www.w3.org/2005/Atom">
+     <title>Soliloquy</title>
+     <summary>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</summary>
+     <link rel="alternate" type="text/html" href="http://superfeedr.com/entries/12345789"/>
+     <id>tag:domain.tld,2009:Soliloquy-32397</id>
+     <published>2010-04-05T11:04:21Z</published>
+    </entry>
+   </item>
+   <item>
+    <entry xmlns="http://www.w3.org/2005/Atom">
+     <title>Finibus Bonorum et Malorum</title>
+     <summary>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</summary>
+     <link rel="alternate" type="text/html" href="http://superfeedr.com/entries/12345788"/>
+     <id>tag:domain.tld,2009:Finibus-32398</id>
+     <published>2010-04-06T08:54:02Z</published>
+    </entry>
+   </item>
+  </items>
+ </event>
+XML;
+        
+        $dispatcher = $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
+        $handler = new EventHandler($dispatcher);
+        
+        $dispatcher->expects($this->once())
+                ->method('dispatch')
+                ->will($this->returnCallback(array($this, 'handleEventForTestDigestParsed')));
+        
+        $handler->handleNotification($payload);
+    }
+
+    /**
+     * Helper callback to receive event notifications for the
+     * <code>testDigestParsed</code> function.
+     * @param string $eventName Event name.
+     * @param NotificationReceivedEvent $event The event.
+     */
+    public function handleEventForTestDigestParsed($eventName, NotificationReceivedEvent $event)
+    {
+        $this->assertTrue($event->isDigest());
+    }
 }
