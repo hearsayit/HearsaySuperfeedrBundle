@@ -96,7 +96,13 @@ class Receiver
         
         if ($xml !== null && $xml->getName() === 'message') {
             $event = $xml->event;
-            $this->handler->handleNotification($event->asXml());            
+            try {
+                $this->handler->handleNotification($event->asXml());
+            } catch (\Exception $exception) {
+                // Log exceptions, but don't stop them from propagating
+                $this->logger->err("Caught " . \get_class($exception) . " while handling notification: " . $exception->getMessage());
+                throw $exception;
+            }
         }        
     }
 }
