@@ -55,6 +55,12 @@ class HearsaySuperfeedrExtension extends Extension
         $container->setParameter('hearsay_superfeedr.password', $config['password']);
         $container->setParameter('hearsay_superfeedr.jaxl_log_path', $config['log_path']);
         $container->setParameter('hearsay_superfeedr.jaxl_log_level', $config['log_level']);
+        
+        if ($config['test']) {
+            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.test_subscriber');
+        } else {
+            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.live_subscriber');
+        }
     }
     
 }

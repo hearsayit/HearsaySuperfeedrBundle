@@ -22,47 +22,39 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\DependencyInjection;
+namespace Hearsay\SuperfeedrBundle\Command;
 
-use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Bundle\FrameworkBundle\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Config definitions for the Superfeedr bundle.
+ * Command to listen for Superfeedr update notifications.  Runs indefinitely;
+ * most likely useful in conjunction with e.g. deamontools.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Configuration implements ConfigurationInterface
+class ListenCommand extends Command
 {
     /**
      * {@inheritdoc}
      */
-    public function getConfigTreeBuilder()
+    protected function configure()
     {
-        $builder = new TreeBuilder();
-        $rootNode = $builder->root('hearsay_superfeedr');
-        
-        $rootNode
-            ->children()
-                ->scalarNode('username')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                ->end()
-                ->scalarNode('password')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                ->end()
-                ->scalarNode('log_level')
-                    ->defaultValue(1)
-                ->end()
-                ->scalarNode('log_path')
-                    ->defaultValue('%kernel.logs_dir%/jaxl_%kernel.environment%.log')
-                ->end()
-                ->booleanNode('test')
-                    ->defaultFalse()
-                ->end()
-        ;
-        
-        return $builder;
+        $this
+                ->setName('superfeedr:listen')
+                ->setDescription('Listen for notifications from Superfeedr.');
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $receiver = $this->container->get('hearsay_superfeedr.receiver');
+        $output->writeln('Listening for messages...');
+        $receiver->listen();
+        $output->writeln('Finished listening.');
+    }    
 }

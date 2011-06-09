@@ -54,19 +54,27 @@ class EventHandler implements HandlerInterface
     public function handleNotification($payload)
     {   
         $xml = simplexml_load_string($payload);
+   
+        // Get the URL
         $url = (string)($xml->status->attributes()->feed);
+
+        // Get the digest status
         $status = $xml->status;
         $digest = false;
         $digestAttribute = $status->attributes()->digest;
         if ($digestAttribute) {
             $digest = true;
         }
+        
+        // Get the entries
         $entries = array();
         foreach ($xml->items->item as $item) {
             $entry = $item->entry->asXml();
             $entries[] = $entry;
         }
         $event = new NotificationReceivedEvent($url, $entries, $digest);
+        
+        // Dispatch the event
         $this->dispatcher->dispatch(Events::NOTIFICATION_RECEIVED, $event);
     }
 

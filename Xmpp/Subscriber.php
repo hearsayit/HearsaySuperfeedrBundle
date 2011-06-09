@@ -31,7 +31,7 @@ use Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory;
  * Service to subscribe or unsubscribe from notifications on feeds.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Subscriber
+class Subscriber implements SubscriberInterface
 {
 
     /**
@@ -42,10 +42,6 @@ class Subscriber
      * @var string
      */
     protected $recipient = null;
-    /**
-     * @var bool
-     */
-    protected $defaultDigest = null;
     /**
      * @var string
      */
@@ -60,14 +56,11 @@ class Subscriber
      * @param JaxlFactory $jaxlFactory Factory for creating JAXL instances.
      * @param string $recipient Value of the 'to' attribute on subscribe and
      * unsubscribe requests.
-     * @param bool $defaultDigest Whether to subscribe for digest notifications
-     * by default.
      */
-    public function __construct(JaxlFactory $jaxlFactory, $recipient = 'firehoser.superfeedr.com', $defaultDigest = false)
+    public function __construct(JaxlFactory $jaxlFactory, $recipient = 'firehoser.superfeedr.com')
     {
         $this->jaxlFactory = $jaxlFactory;
         $this->recipient = $recipient;
-        $this->defaultDigest = $defaultDigest;
     }
 
     /**
@@ -112,7 +105,6 @@ class Subscriber
         $recipient = $this->recipient;
         $success = false;
 
-
         $jaxl->addPlugin('jaxl_post_auth', function($unused, $jaxl) use ($payload, $recipient, &$success) {
                     // Send the subscription request
                     $jaxl->sendIQ('set', $payload, $recipient, $jaxl->bareJid, function($response, \JAXL $jaxl) use (&$success) {
@@ -127,26 +119,15 @@ class Subscriber
     }
 
     /**
-     * Subscribe to receive updates from the given resource(s).
-     * @param string|array $urls The URL of the resource, or an array of URLs.
-     * @param bool|null $digest Whether to subscribe for digest updates on the
-     * resources, or null to use the digest default provided at construction.
-     * @return bool Whether the subscription request was successful.
+     * {@inheritdoc}
      */
-    public function subscribe($urls, $digest = null)
+    public function subscribe($urls, $digest)
     {
-        // Use the deault digest state if appropriate
-        if ($digest === null) {
-            $digest = $this->defaultDigest;
-        }
-
         return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
     }
 
     /**
-     * Unsubscribe from updates on the given resource(s).
-     * @param string|arrray $urls The URL of the resource, or an array of URLs.
-     * @return bool Whether the subscription request was successful.
+     * {@inheritdoc}
      */
     public function unsubscribe($urls)
     {

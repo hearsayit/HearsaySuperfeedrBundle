@@ -65,7 +65,7 @@ class Receiver
      * Receive and handle notifications indefinitely.  This method will not 
      * terminate until the JAXL instance becomes disconnected.
      */
-    public function start()
+    public function listen()
     {
         $jaxl = $this->factory->createInstance();
         $jaxl->addPlugin('jaxl_post_handler', array($this, 'handlePost'));

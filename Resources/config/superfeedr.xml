@@ -59,11 +59,15 @@
             <argument type="service" id="event_dispatcher" />
         </service>
         <service 
-            id="hearsay_superfeedr.subscriber"
+            id="hearsay_superfeedr.live_subscriber"
             class="%hearsay_superfeedr.subscriber.class%" >
             <argument type="service" id="hearsay_superfeedr.jaxl_factory" />
             <argument type="string">%hearsay_superfeedr.to%</argument>
         </service>
+        <service
+            id="hearsay_superfeedr.test_subscriber"
+            class="Hearsay\SuperfeedrBundle\Test\Subscriber"
+            public="false" />
         <service
             id="hearsay_superfeedr.receiver"
             class="%hearsay_superfeedr.receiver.class%" >

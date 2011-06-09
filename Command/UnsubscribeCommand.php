@@ -22,47 +22,47 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\DependencyInjection;
+namespace Hearsay\SuperfeedrBundle\Command;
 
-use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Bundle\FrameworkBundle\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Config definitions for the Superfeedr bundle.
+ * Command to unsubscribe from a feed.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Configuration implements ConfigurationInterface
+class UnsubscribeCommand extends Command
 {
+
     /**
      * {@inheritdoc}
      */
-    public function getConfigTreeBuilder()
+    protected function configure()
     {
-        $builder = new TreeBuilder();
-        $rootNode = $builder->root('hearsay_superfeedr');
-        
-        $rootNode
-            ->children()
-                ->scalarNode('username')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                ->end()
-                ->scalarNode('password')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                ->end()
-                ->scalarNode('log_level')
-                    ->defaultValue(1)
-                ->end()
-                ->scalarNode('log_path')
-                    ->defaultValue('%kernel.logs_dir%/jaxl_%kernel.environment%.log')
-                ->end()
-                ->booleanNode('test')
-                    ->defaultFalse()
-                ->end()
-        ;
-        
-        return $builder;
+        $this
+                ->setName('superfeedr:unsubscribe')
+                ->setDescription('Unsubscribe from a resource on Superfeedr.')
+                ->addArgument('url', InputArgument::REQUIRED, 'The resource URL to unsubscribe from.');
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $url = $input->getArgument('url');
+
+        // Just hand this off to the subscriber service
+        $success = $this->container->get('hearsay_superfeedr.subscriber')->unsubscribe($url);
+        
+        if ($success) {
+            $output->writeln('Successfully unsubscribed from ' . $url . '.');
+        } else {
+            throw new \Exception('There was a problem unsubscribing.');
+        }
+    }
+
 }

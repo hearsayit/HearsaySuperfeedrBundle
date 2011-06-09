@@ -38,7 +38,7 @@ class SubscriberTest extends WebTestCase
      * @return Subscriber The subscriber.
      */
     protected function getSubscriber() {
-        return $this->getContainer()->get('hearsay_superfeedr.subscriber');
+        return $this->getContainer()->get('hearsay_superfeedr.live_subscriber');
     }
     
     /**
@@ -62,7 +62,7 @@ class SubscriberTest extends WebTestCase
      */
     public function testSubscriptionAndUnsubscriptionPossible() {
         $subscriber = $this->getSubscriber();
-        $this->assertTrue($subscriber->subscribe('http://superfeedr.com/dummy.xml'));        
+        $this->assertTrue($subscriber->subscribe('http://superfeedr.com/dummy.xml', true));        
         $this->assertTrue($subscriber->unsubscribe('http://superfeedr.com/dummy.xml'));
     }
     
@@ -75,6 +75,6 @@ class SubscriberTest extends WebTestCase
      */
     public function testBadSubscriptionNotPossible() {
         $subscriber = $this->getSubscriber();
-        $this->assertFalse($subscriber->subscribe('not a url at all'));
+        $this->assertFalse($subscriber->subscribe('not a url at all', false));
     }
 }
