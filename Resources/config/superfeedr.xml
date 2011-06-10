@@ -26,6 +26,7 @@
         <parameter type="string" key="hearsay_superfeedr.superfeedr.class">Hearsay\SuperfeedrBundle\Xmpp\Superfeedr</parameter>
         <parameter type="string" key="hearsay_superfeedr.username" />
         <parameter type="string" key="hearsay_superfeedr.password" />
+        <parameter type="string" key="hearsay_superfeedr.listener_timeout" />
         <parameter key="hearsay_superfeedr.port">5222</parameter>
         <parameter type="string" key="hearsay_superfeedr.host">xmpp.superfeedr.com</parameter>
         <parameter type="string" key="hearsay_superfeedr.server">superfeedr.com</parameter>
@@ -44,6 +45,9 @@
             </call>
             <call method="setLogger">
                 <argument type="service" id="logger" />
+            </call>
+            <call method="setListenerTimeout">
+                <argument>%hearsay_superfeedr.listener_timeout%</argument>
             </call>
             <tag name="monolog.logger" channel="superfeedr" />
         </service>

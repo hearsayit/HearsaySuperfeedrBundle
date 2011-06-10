@@ -21,6 +21,7 @@
 
 namespace Hearsay\SuperfeedrBundle\Xmpp;
 
+use Hearsay\SuperfeedrBundle\Exception;
 use Hearsay\SuperfeedrBundle\Handler\HandlerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
@@ -45,6 +46,11 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
      * @var LoggerInterface
      */
     protected $logger = null;
+    /**
+     * Timeout to expect messages from the listener.
+     * @var integer
+     */
+    protected $listenerTimeout = -1;
 
     /**
      * Standard constructor; reorder the options to make more sense for the
@@ -79,6 +85,16 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
     }
 
     /**
+     * Set the timeout after which an exception will be thrown when listening
+     * for messages.
+     * @param integer $listenerTimeout Timeout in seconds.
+     */
+    public function setListenerTimeout($listenerTimeout)
+    {
+        $this->listenerTimeout = $listenerTimeout;
+    }
+
+    /**
      * {@inheritdoc}
      * @param bool $start Whether to wait for the session to start before 
      * returning.
@@ -88,7 +104,7 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
         $return = parent::connect($timeout, $persistent, $sendinit);
         $this->connected = true;
         if ($start) {
-            $this->processUntil(array('session_start', 'end_stream'));
+            $this->processUntil(array('session_start', 'end_stream'), $timeout);
         }
         return $return;
     }
@@ -101,8 +117,8 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
     {
         return $this->connected;
     }
-    
-    /** 
+
+    /**
      * {@inheritdoc}
      */
     protected function bufferComplete($buff)
@@ -118,6 +134,8 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
 
     /**
      * {@inheritdoc}
+     * @throws Exception\TimeoutException If no message is received for the
+     * specified timeout period.
      */
     public function listen()
     {
@@ -126,7 +144,12 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
         }
 
         $this->addXPathHandler('{jabber:client}message/{http://jabber.org/protocol/pubsub#event}event/{http://superfeedr.com/xmpp-pubsub-ext}status', 'handleMessage');
-        $this->processUntil('end_stream');
+        while (!$this->isDisconnected()) {
+            $results = $this->processUntil('message', $this->listenerTimeout);
+            if (\count($results) === 0) {
+                throw new Exception\TimeoutException("Haven't received a message for " . $this->listenerTimeout . " seconds.  The connection may have been lost.");
+            }
+        }
     }
 
     /**

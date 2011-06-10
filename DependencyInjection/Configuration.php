@@ -49,15 +49,12 @@ class Configuration implements ConfigurationInterface
                     ->isRequired()
                     ->cannotBeEmpty()
                 ->end()
-                ->scalarNode('log_level')
-                    ->defaultValue(1)
-                ->end()
-                ->scalarNode('log_path')
-                    ->defaultValue('%kernel.logs_dir%/jaxl_%kernel.environment%.log')
-                ->end()
                 ->booleanNode('test')
                     ->defaultFalse()
                 ->end()
+                ->scalarNode('listener_timeout')
+                    ->defaultValue(-1)
+                ->end();
         ;
         
         return $builder;
