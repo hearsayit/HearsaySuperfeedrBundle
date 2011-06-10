@@ -44,7 +44,7 @@
                 <argument type="service" id="hearsay_superfeedr.event_handler" />
             </call>
             <call method="setLogger">
-                <argument type="service" id="logger" />
+                <argument type="service" id="monolog.logger.superfeedr" />
             </call>
             <call method="setListenerTimeout">
                 <argument>%hearsay_superfeedr.listener_timeout%</argument>

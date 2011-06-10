@@ -21,7 +21,6 @@
 
 namespace Hearsay\SuperfeedrBundle\Command;
 
-use Hearsay\SuperfeedrBundle\Exception;
 use Symfony\Bundle\FrameworkBundle\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,7 +42,7 @@ class ListenCommand extends Command
     {
         $this
                 ->setName('superfeedr:listen')
-                ->addOption('die', 'd', InputOption::VALUE_NONE, 'Die immediately upon timeout, rather than just throwing an exception.')
+                ->addOption('die', 'd', InputOption::VALUE_NONE, 'Die immediately upon failure, rather than just throwing an exception.')
                 ->setDescription('Listen for notifications from Superfeedr.');
     }
 
@@ -56,8 +55,12 @@ class ListenCommand extends Command
         $output->writeln('Listening for messages...');
         try {
             $receiver->listen();
-        } catch (Exception\TimeoutException $exception) {
-            $this->container->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
+        } catch (\Exception $exception) {
+            if ($exception instanceof \Hearsay\SuperfeedrBundle\Exception\TimeoutException) {
+                $this->container->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
+            } else {
+                $this->container->get('monolog.logger.superfeedr')->err('Caught ' . \get_class() . ' while listening: ' . $exception->getMessage());
+            }
             if ($input->getOption('die')) {
                 die($exception->getMessage() . "\n");
             } else {
