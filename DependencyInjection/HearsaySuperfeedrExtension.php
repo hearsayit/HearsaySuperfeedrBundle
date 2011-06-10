@@ -59,7 +59,7 @@ class HearsaySuperfeedrExtension extends Extension
         if ($config['test']) {
             $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.test_subscriber');
         } else {
-            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.live_subscriber');
+            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.superfeedr');
         }
     }
     

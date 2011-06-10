@@ -37,12 +37,12 @@ interface SubscriberInterface
      * resources.
      * @return bool Whether the subscription request was successful.
      */
-    public function subscribe($urls, $digest);
+    public function subscribeTo($urls, $digest);
     
     /**
      * Unsubscribe from updates on the given resource(s).
      * @param string|arrray $urls The URL of the resource, or an array of URLs.
      * @return bool Whether the subscription request was successful.
      */
-    public function unsubscribe($urls);
+    public function unsubscribeFrom($urls);
 }

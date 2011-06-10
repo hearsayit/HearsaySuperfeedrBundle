@@ -33,8 +33,9 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  */
 class Receiver
 {
+
     /**
-     * @var JaxlFactory
+     * @var ConnectionFactory
      */
     protected $factory = null;
     /**
@@ -48,13 +49,13 @@ class Receiver
 
     /**
      * Standard constructor.
-     * @param JaxlFactory $factory The factory to use for creating JAXL
+     * @param ConnectionFactory $factory The factory to use for creating XMPP
      * instances.
      * @param HandlerInterface $handler The handler to invoke when a
      * notification is received.
      * @param LoggerInterface $logger The logger to note errors.
      */
-    public function __construct(JaxlFactory $factory, HandlerInterface $handler, LoggerInterface $logger)
+    public function __construct(ConnectionFactory $factory, HandlerInterface $handler, LoggerInterface $logger)
     {
         $this->factory = $factory;
         $this->handler = $handler;
@@ -67,42 +68,30 @@ class Receiver
      */
     public function listen()
     {
-        $jaxl = $this->factory->createInstance();
-        $jaxl->addPlugin('jaxl_post_handler', array($this, 'handlePost'));
-        $jaxl->start();
+        $xmpp = $this->factory->createConnection();
+        $xmpp->connect();
+        $xmpp->processUntil('session_start');
+        $xmpp->addXPathHandler('{jabber:client}message/{http://jabber.org/protocol/pubsub#event}event/{http://superfeedr.com/xmpp-pubsub-ext}status', 'handleMessage', $this);
+        $xmpp->processUntil('end_stream');
+        $xmpp->disconnect();
     }
 
-    /**
-     * Callback to handle the raw XML of a notification from the server (message
-     * or otherwise).
-     * @param string $payload The raw notification XML.
-     * @param \JAXL $jaxl The JAXL object on which the message was received.
-     */
-    public function handlePost($payload, \JAXL $jaxl)
-    {        
-        $xml = null;
+    public function handleMessage(\XMPPHP_XMLObj $message)
+    {
         try {
-            $xml = simplexml_load_string($payload);
+            $parsed = simplexml_load_string($message->toString());
+            $payload = $parsed->event->asXml();
         } catch (\Exception $exception) {
-            // Malformed XML; we're probably not concerned with it
-            $xml = null;
-            
-            // But log an error if something did go wrong
-            $messageString = '<message';
-            if (\strpos($payload, $messageString) !== false) {
-                $this->logger->err("Could not process message: $payload");
-            }
+            $this->logger->err("Problem parsing XML: " . $message->toString());
+            throw $exception;
         }
-        
-        if ($xml !== null && $xml->getName() === 'message') {
-            $event = $xml->event;
-            try {
-                $this->handler->handleNotification($event->asXml());
-            } catch (\Exception $exception) {
-                // Log exceptions, but don't stop them from propagating
-                $this->logger->err("Caught " . \get_class($exception) . " while handling notification: " . $exception->getMessage());
-                throw $exception;
-            }
-        }        
+        try {
+            $this->handler->handleNotification($payload);
+        } catch (\Exception $exception) {
+            // Log exceptions, but don't stop them from propagating
+            $this->logger->err("Caught " . \get_class($exception) . " while handling notification: " . $exception->getMessage());
+            throw $exception;
+        }
     }
+
 }

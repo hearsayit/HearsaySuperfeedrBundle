@@ -24,28 +24,27 @@
 
 namespace Hearsay\SuperfeedrBundle\Xmpp;
 
-use Hearsay\SuperfeedrBundle\Exception\CouldNotConnectException;
-
 /**
- * JAXL subclass with a custom runner method which operates more cleanly than 
- * the built-in <code>startCore</code>
+ * Extension of the XMPP class which hacks together a fix for disconnecting.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Jaxl extends \JAXL
+class Xmpp extends \XMPPHP_XMPP
 {
 
     /**
-     * Connect and authenticate this instance in stream mode, and start 
-     * listening for messages until told to shut down.
+     * {@inheritdoc}
      */
-    public function start()
+    public function disconnect()
     {
-        $this->addPlugin('jaxl_post_connect', array($this, 'startStream'));
-
-        $this->connect();
-        while ($this->stream) {
-            $this->getXML();
+        $this->log->log("Disconnecting...", \XMPPHP_Log::LEVEL_VERBOSE);
+        if (false == (bool) $this->socket) {
+            return;
         }
+        $this->reconnect = false;
+        $this->send($this->stream_end);
+        $this->sent_disconnect = true;
+        // Don't actually process the server's response
+        $this->disconnected = true;
     }
 
 }

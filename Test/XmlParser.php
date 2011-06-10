@@ -22,39 +22,23 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Command;
-
-use Symfony\Bundle\FrameworkBundle\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+namespace Hearsay\SuperfeedrBundle\Test;
 
 /**
- * Command to listen for Superfeedr update notifications.  Runs indefinitely;
- * most likely useful in conjunction with e.g. deamontools.
+ * Helper class to parse XML into <code>XMPPHP_XMLObj</code> objects.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class ListenCommand extends Command
+class XmlParser extends \XMPPHP_XMLStream
 {
+    
     /**
-     * {@inheritdoc}
+     * Get the XML object for the given raw XML.
+     * @param string $xml The raw XML.
+     * @return \XMPPHP_XMLObj The XML object.
      */
-    protected function configure()
+    public function getObject($xml)
     {
-        $this
-                ->setName('superfeedr:listen')
-                ->setDescription('Listen for notifications from Superfeedr.');
+        xml_parse($this->parser, $xml);
+        return $this->xmlobj;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $receiver = $this->container->get('hearsay_superfeedr.listener');
-        $output->writeln('Listening for messages...');
-        $receiver->listen();
-        $output->writeln('Finished listening.');
-    }    
 }

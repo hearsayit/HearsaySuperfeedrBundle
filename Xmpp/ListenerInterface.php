@@ -22,39 +22,17 @@
  * SOFTWARE.
  */
 
-namespace Hearsay\SuperfeedrBundle\Command;
-
-use Symfony\Bundle\FrameworkBundle\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+namespace Hearsay\SuperfeedrBundle\Xmpp;
 
 /**
- * Command to listen for Superfeedr update notifications.  Runs indefinitely;
- * most likely useful in conjunction with e.g. deamontools.
+ * Interface for classes which can receive Superfeedr notifications.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class ListenCommand extends Command
+interface ListenerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure()
-    {
-        $this
-                ->setName('superfeedr:listen')
-                ->setDescription('Listen for notifications from Superfeedr.');
-    }
 
     /**
-     * {@inheritdoc}
+     * Listen indefinitely for incoming messages.
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $receiver = $this->container->get('hearsay_superfeedr.listener');
-        $output->writeln('Listening for messages...');
-        $receiver->listen();
-        $output->writeln('Finished listening.');
-    }    
+    public function listen();
 }

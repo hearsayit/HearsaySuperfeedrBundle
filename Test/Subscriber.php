@@ -45,7 +45,7 @@ class Subscriber implements SubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public function subscribe($urls, $digest)
+    public function subscribeTo($urls, $digest)
     {
         if (!(is_array($urls))) {
             $urls = array($urls);
@@ -59,7 +59,7 @@ class Subscriber implements SubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public function unsubscribe($urls)
+    public function unsubscribeFrom($urls)
     {
         if (!(is_array($urls))) {
             $urls = array($urls);

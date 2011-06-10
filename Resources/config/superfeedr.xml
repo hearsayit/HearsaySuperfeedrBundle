@@ -26,31 +26,29 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <parameters>
-        <parameter type="string" key="hearsay_superfeedr.subscriber.class">Hearsay\SuperfeedrBundle\Xmpp\Subscriber</parameter>
-        <parameter type="string" key="hearsay_superfeedr.receiver.class">Hearsay\SuperfeedrBundle\Xmpp\Receiver</parameter>
+        <parameter type="string" key="hearsay_superfeedr.superfeedr.class">Hearsay\SuperfeedrBundle\Xmpp\Superfeedr</parameter>
         <parameter type="string" key="hearsay_superfeedr.username" />
         <parameter type="string" key="hearsay_superfeedr.password" />
-        <parameter type="string" key="hearsay_superfeedr.domain">superfeedr.com</parameter>
+        <parameter key="hearsay_superfeedr.port">5222</parameter>
         <parameter type="string" key="hearsay_superfeedr.host">xmpp.superfeedr.com</parameter>
-        <parameter key="hearsay_superfeedr.packet_size">16777216</parameter>
-        <parameter type="string" key="hearsay_superfeedr.jaxl_pid_path">%kernel.cache_dir%/jaxl.pid</parameter>
-        <parameter type="string" key="hearsay_superfeedr.jaxl_log_level" />
-        <parameter type="string" key="hearsay_superfeedr.jaxl_log_path" />
-        <parameter type="string" key="hearsay_superfeedr.to">firehoser.superfeedr.com</parameter>
+        <parameter type="string" key="hearsay_superfeedr.server">superfeedr.com</parameter>
     </parameters>
     <services>
         <service
-            id="hearsay_superfeedr.jaxl_factory"
-            class="Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory"
-            public="false" >
+            id="hearsay_superfeedr.superfeedr"
+            class="%hearsay_superfeedr.superfeedr.class%" >
             <argument type="string">%hearsay_superfeedr.username%</argument>
             <argument type="string">%hearsay_superfeedr.password%</argument>
-            <argument type="string">%hearsay_superfeedr.domain%</argument>
+            <argument type="string">%hearsay_superfeedr.port%</argument>
             <argument type="string">%hearsay_superfeedr.host%</argument>
-            <argument>%hearsay_superfeedr.packet_size%</argument>
-            <argument type="string">%hearsay_superfeedr.jaxl_pid_path%</argument>
-            <argument type="string">%hearsay_superfeedr.jaxl_log_path%</argument>
-            <argument>%hearsay_superfeedr.jaxl_log_level%</argument>
+            <argument type="string">%hearsay_superfeedr.server%</argument>
+            <call method="setHandler">
+                <argument type="service" id="hearsay_superfeedr.event_handler" />
+            </call>
+            <call method="setLogger">
+                <argument type="service" id="logger" />
+            </call>
+            <tag name="monolog.logger" channel="superfeedr" />
         </service>
         <service
             id="hearsay_superfeedr.event_handler"
@@ -58,23 +56,10 @@
             public="false" >
             <argument type="service" id="event_dispatcher" />
         </service>
-        <service 
-            id="hearsay_superfeedr.live_subscriber"
-            class="%hearsay_superfeedr.subscriber.class%" >
-            <argument type="service" id="hearsay_superfeedr.jaxl_factory" />
-            <argument type="string">%hearsay_superfeedr.to%</argument>
-        </service>
         <service
             id="hearsay_superfeedr.test_subscriber"
             class="Hearsay\SuperfeedrBundle\Test\Subscriber"
             public="false" />
-        <service
-            id="hearsay_superfeedr.receiver"
-            class="%hearsay_superfeedr.receiver.class%" >
-            <argument type="service" id="hearsay_superfeedr.jaxl_factory" />
-            <argument type="service" id="hearsay_superfeedr.event_handler" />
-            <argument type="service" id="logger" />
-            <tag name="monolog.logger" channel="superfeedr" />
-        </service>
+        <service id="hearsay_superfeedr.listener" alias="hearsay_superfeedr.superfeedr" />
     </services>
 </container>

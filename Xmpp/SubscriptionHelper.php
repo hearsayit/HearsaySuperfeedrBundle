@@ -24,36 +24,22 @@
 
 namespace Hearsay\SuperfeedrBundle\Xmpp;
 
-use Hearsay\SuperfeedrBundle\Exception;
-use Hearsay\SuperfeedrBundle\Xmpp\JaxlFactory;
-
 /**
- * Service to subscribe or unsubscribe from notifications on feeds.
+ * Helper service to manage the actual subscription process for a connected
+ * Superfeedr instance.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Subscriber implements SubscriberInterface
+class SubscriptionHelper
 {
 
     /**
-     * The 'current' XMPP instance.
-     * @var \XMPPHP_XMPP
-     */
-    private $xmpp = null;
-
-    /**
-     * Success status of the current request.
      * @var bool
      */
-    private $success = null;
-    
-    /**
-     * @var ConnectionFactory
-     */
-    protected $factory = null;
+    private $successful = false;
     /**
      * @var string
      */
-    protected $recipient = null;
+    protected $recipient = 'firehoser.superfeedr.com';
     /**
      * @var string
      */
@@ -62,17 +48,50 @@ class Subscriber implements SubscriberInterface
      * @var string
      */
     protected $superfeedrXmlns = 'http://superfeedr.com/xmpp-pubsub-ext';
+    /**
+     * The connection to use for subscribing.
+     * @var Superfeedr
+     */
+    protected $xmpp = null;
 
     /**
      * Standard constructor.
-     * @param JaxlFactory $factory Factory for creating JAXL instances.
-     * @param string $recipient Value of the 'to' attribute on subscribe and
-     * unsubscribe requests.
+     * @param Superfeedr $xmpp The connection to use for subscribing.
      */
-    public function __construct(ConnectionFactory $factory, $recipient = 'firehoser.superfeedr.com')
+    public function __construct(Superfeedr $xmpp)
     {
-        $this->factory = $factory;
-        $this->recipient = $recipient;
+        $this->xmpp = $xmpp;
+    }
+
+    /**
+     * Perform a subscribe request.
+     * @param string|array $urls The URL or URLs to subscribe to.
+     * @param bool $digest Whether to subscribe for digest updates.
+     * @return bool Whether the subscription was successful.
+     */
+    public function doSubscribe($urls, $digest)
+    {
+        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
+    }
+
+    /**
+     * Perform an unsubscribe request.
+     * @param string|array $urls The URL or URLs to unsubscribe from.
+     * @return bool Whether the unsubscribe request was successful.
+     */
+    public function doUnsubscribe($urls)
+    {
+        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
+    }
+
+    /**
+     * Check whether the most recent subscription or unsubscription was
+     * successful.
+     * @return bool Subscription success status.
+     */
+    public function isSuccessful()
+    {
+        return $this->successful;
     }
 
     /**
@@ -89,22 +108,21 @@ class Subscriber implements SubscriberInterface
         if (!(\is_array($urls))) {
             $urls = array($urls);
         }
-        
-        $this->xmpp = $this->factory->createConnection();
+
         $jid = $this->xmpp->user . '@' . $this->xmpp->server;
         $id = $this->xmpp->getId();
-        
+
         // Build up the IQ request
         $dom = new \DOMDocument();
-        
+
         $iq = $dom->createElement('iq');
         $iq->setAttribute('type', 'set');
         $iq->setAttribute('to', $this->recipient);
         $iq->setAttribute('from', $jid);
         $iq->setAttribute('id', $id);
-        
+
         $iq = $dom->appendChild($iq);
-        
+
         // Create the top-level payload tag
         $pubsub = $dom->createElement('pubsub');
         $pubsub->setAttribute('xmlns', $this->pubSubXmlns);
@@ -124,45 +142,30 @@ class Subscriber implements SubscriberInterface
         }
 
         $xml = $dom->saveXML($iq);
-
-        // Connect, send, and wait for a response
-        $this->xmpp->connect();        
-        $this->xmpp->processUntil('session_start');
-        $this->xmpp->addIdHandler($id, 'handleResponse', $this);
         
+        // Send and wait for a response
+        $this->xmpp->addIdHandler($id, 'handleResponse', $this);
+
         $this->xmpp->send($xml);
         $this->xmpp->processUntil('handle_subscription');
-        
-        $this->xmpp->disconnect();
-        $this->xmpp = null;
-        
-        return $this->success;
+
+        return $this->isSuccessful();
     }
-    
+
+    /**
+     * Handle a response to a subscription request from our connection, and set
+     * our success state appropriately.
+     * @param \XMPPHP_XMLObj $response The server's response to a subscription
+     * request.
+     */
     public function handleResponse(\XMPPHP_XMLObj $response)
     {
         if ($response->attrs['type'] == 'result') {
-            $this->success = true;
+            $this->successful = true;
 	} else {
-            $this->success = false;
+            $this->successful = false;
 	}
         $this->xmpp->event('handle_subscription');
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function subscribe($urls, $digest)
-    {
-        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function unsubscribe($urls)
-    {
-        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
-    }
-
+    
 }

@@ -56,7 +56,7 @@ class UnsubscribeCommand extends Command
         $url = $input->getArgument('url');
 
         // Just hand this off to the subscriber service
-        $success = $this->container->get('hearsay_superfeedr.subscriber')->unsubscribe($url);
+        $success = $this->container->get('hearsay_superfeedr.subscriber')->unsubscribeFrom($url);
         
         if ($success) {
             $output->writeln('Successfully unsubscribed from ' . $url . '.');

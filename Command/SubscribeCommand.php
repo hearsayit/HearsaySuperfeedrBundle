@@ -57,12 +57,13 @@ class SubscribeCommand extends Command
         $digest = $input->getOption('digest');
 
         // Just hand this off to the subscriber service
-        $success = $this->container->get('hearsay_superfeedr.subscriber')->subscribe($url, $digest);
+        $success = $this->container->get('hearsay_superfeedr.subscriber')->subscribeTo($url, $digest);
         
         if ($success) {
             $output->writeln('Successfully subscribed to ' . $url . '.');
         } else {
             throw new \Exception('There was a problem with the subscription.');
         }
+        
     }
 }
