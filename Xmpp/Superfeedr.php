@@ -60,7 +60,7 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
      */
     public function __construct($username, $password, $port = 5222, $host = 'superfeedr.com', $server = null, $resource = 'superfeedr')
     {
-        parent::__construct($host, $port, $username, $password, $resource, $server, true, 3);
+        parent::__construct($host, $port, $username, $password, $resource, $server);
     }
 
     /**
