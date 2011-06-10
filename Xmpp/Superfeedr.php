@@ -88,7 +88,6 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
      */
     public function connect($timeout = 30, $persistent = true, $sendinit = true, $start = true)
     {
-        $this->handler = null;
         $return = parent::connect($timeout, $persistent, $sendinit);
         $this->connected = true;
         if ($start) {
@@ -129,8 +128,7 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
             $this->connect();
         }
 
-        $this->processUntil('session_start');
-        $this->addXPathHandler('{jabber:client}message/{http://jabber.org/protocol/pubsub#event}event/{http://superfeedr.com/xmpp-pubsub-ext}status', 'handleMessage', $this);
+        $this->addXPathHandler('{jabber:client}message/{http://jabber.org/protocol/pubsub#event}event/{http://superfeedr.com/xmpp-pubsub-ext}status', 'handleMessage');
         $this->processUntil('end_stream');
     }
 

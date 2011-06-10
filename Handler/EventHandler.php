@@ -75,10 +75,7 @@ class EventHandler implements HandlerInterface
         $event = new NotificationReceivedEvent($url, $entries, $digest);
         
         // Dispatch the event
-        print " DOING THIS \n\n\n\n\n\n";
-        print_r($event);
         $this->dispatcher->dispatch(Events::NOTIFICATION_RECEIVED, $event);
-        print " DONE IT \n\n\n\n\n\n";
     }
 
 }
