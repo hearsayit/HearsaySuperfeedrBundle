@@ -59,7 +59,7 @@ class ListenCommand extends Command
             if ($exception instanceof \Hearsay\SuperfeedrBundle\Exception\TimeoutException) {
                 $this->container->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
             } else {
-                $this->container->get('monolog.logger.superfeedr')->err('Caught ' . \get_class() . ' while listening: ' . $exception->getMessage());
+                $this->container->get('monolog.logger.superfeedr')->err('Caught ' . \get_class($exception) . ' while listening: ' . $exception->getMessage());
             }
             if ($input->getOption('die')) {
                 die($exception->getMessage() . "\n");

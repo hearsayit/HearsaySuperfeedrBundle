@@ -117,6 +117,15 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
     {
         return $this->connected;
     }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function processUntil($event, $timeout = 30)
+    {
+        // We just change the default timeout
+        return parent::processUntil($event, $timeout);
+    }
 
     /**
      * {@inheritdoc}

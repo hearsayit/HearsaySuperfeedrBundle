@@ -31,6 +31,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 class EventHandler implements HandlerInterface
 {
+
     /**
      * @var EventDispatcherInterface
      */
@@ -49,11 +50,11 @@ class EventHandler implements HandlerInterface
      * {@inheritdoc}
      */
     public function handleNotification($payload)
-    {   
+    {
         $xml = simplexml_load_string($payload);
-   
+
         // Get the URL
-        $url = (string)($xml->status->attributes()->feed);
+        $url = (string) ($xml->status->attributes()->feed);
 
         // Get the digest status
         $status = $xml->status;
@@ -62,15 +63,17 @@ class EventHandler implements HandlerInterface
         if ($digestAttribute) {
             $digest = true;
         }
-        
+
         // Get the entries
         $entries = array();
         foreach ($xml->items->item as $item) {
-            $entry = $item->entry->asXml();
-            $entries[] = $entry;
+            foreach ($item->children() as $child) {
+                $entry = $child->asXml();
+                $entries[] = $entry;
+            }
         }
         $event = new NotificationReceivedEvent($url, $entries, $digest);
-        
+
         // Dispatch the event
         $this->dispatcher->dispatch(Events::NOTIFICATION_RECEIVED, $event);
     }

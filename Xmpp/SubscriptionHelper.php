@@ -64,21 +64,25 @@ class SubscriptionHelper
      * Perform a subscribe request.
      * @param string|array $urls The URL or URLs to subscribe to.
      * @param bool $digest Whether to subscribe for digest updates.
+     * @param integer $timeout The number of seconds to wait for the request to
+     * complete.
      * @return bool Whether the subscription was successful.
      */
-    public function doSubscribe($urls, $digest)
+    public function doSubscribe($urls, $digest, $timeout = 30)
     {
-        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
+        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest, $timeout);
     }
 
     /**
      * Perform an unsubscribe request.
      * @param string|array $urls The URL or URLs to unsubscribe from.
+     * @param integer $timeout The number of seconds to wait for the request to
+     * complete.
      * @return bool Whether the unsubscribe request was successful.
      */
-    public function doUnsubscribe($urls)
+    public function doUnsubscribe($urls, $timeout = 30)
     {
-        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
+        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false, $timeout);
     }
 
     /**
@@ -98,8 +102,10 @@ class SubscriptionHelper
      * @param string|array $urls The URL or URLs to subscribe/unsubscribe.
      * @param bool $digest Whether to set the Superfeedr 'digest' attribute to
      * true on the subscription tags.
+     * @param integer $timeout The number of seconds to wait before timing out
+     * the subscribe request.
      */
-    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest)
+    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest, $timeout)
     {
         // Always work with an array of URLs
         if (!(\is_array($urls))) {
@@ -144,7 +150,7 @@ class SubscriptionHelper
         $this->xmpp->addIdHandler($id, 'handleResponse', $this);
 
         $this->xmpp->send($xml);
-        $this->xmpp->processUntil('handle_subscription');
+        $this->xmpp->processUntil('handle_subscription', $timeout);
 
         return $this->isSuccessful();
     }
