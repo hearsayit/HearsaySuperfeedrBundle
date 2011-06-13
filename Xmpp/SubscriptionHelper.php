@@ -68,7 +68,7 @@ class SubscriptionHelper
      * complete.
      * @return bool Whether the subscription was successful.
      */
-    public function doSubscribe($urls, $digest, $timeout = 30)
+    public function doSubscribe($urls, $digest, $timeout = 5)
     {
         return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest, $timeout);
     }
@@ -80,7 +80,7 @@ class SubscriptionHelper
      * complete.
      * @return bool Whether the unsubscribe request was successful.
      */
-    public function doUnsubscribe($urls, $timeout = 30)
+    public function doUnsubscribe($urls, $timeout = 5)
     {
         return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false, $timeout);
     }

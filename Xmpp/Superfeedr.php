@@ -35,6 +35,18 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
 {
 
     /**
+     * Running tally of the number of incomplete unchanged buffer checks we've 
+     * performed consecutively.
+     * @var integer
+     */
+    private $numIncomplete = 0;
+    /**
+     * The previously-checked contents of the buffer when checking for buffer
+     * completeness.
+     * @var string
+     */
+    private $prevBuffer = null;
+    /**
      * @var bool
      */
     private $connected = false;
@@ -117,7 +129,7 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
     {
         return $this->connected;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -129,16 +141,84 @@ class Superfeedr extends \XMPPHP_XMPP implements SubscriberInterface, ListenerIn
 
     /**
      * {@inheritdoc}
+     * @param integer $expensiveIterations The number of unchanged incomplete 
+     * iterations to wait before performing a more expensive check on the content of the
+     * buffer.
+     * @param integer $maxIncomplete The maximum number of unchanged incomplete 
+     * iterations to go through before throwing an exception.
      */
-    protected function bufferComplete($buff)
+    protected function bufferComplete($buff, $expensiveIterations = 100, $maxIncomplete = 10000)
     {
-        // Hack to fix the bug on disconnect
-        if ($this->sent_disconnect) {
-            if ($buff === $this->stream_end) {
-                return true;
+        $complete = parent::bufferComplete($buff);
+
+        if (!$complete) {
+            // Hack to fix the bug on disconnect
+            if ($this->sent_disconnect) {
+                if ($buff === $this->stream_end) {
+                    $complete = true;
+                }
             }
         }
-        return parent::bufferComplete($buff);
+
+        if (!$complete && $this->numIncomplete > 0 && ($this->numIncomplete % $expensiveIterations === 0)) {
+            // Hack to check for a complete, stuck buffer
+            $complete = $this->isMultipleElements($buff);
+        }
+
+        if (!$complete && $this->numIncomplete > $maxIncomplete) {
+            // Hack to bail out if the buffer is disconnected
+            throw new Exception\TimeoutException("Incomplete buffer after " . $maxIncomplete . " polling iterations.");
+        }
+
+        if ($complete || $buff !== $this->prevBuffer) {
+            $this->numIncomplete = 0;
+        } else {
+            $this->numIncomplete++;
+        }
+
+        $this->prevBuffer = $buff;
+        
+        return $complete;
+    }
+
+    /**
+     * Check to see if the given XML substring contains one or more complete
+     * stanzas.  This is essentially a more complete, but poorer-performing,
+     * version of <code>bufferComplete</code>, which we run less frequently to 
+     * prevent infinite loops.
+     * @param string $xml The XML substring to check.
+     * @return bool Whether this is a closed XML substring.
+     */
+    private function isMultipleElements($xml)
+    {
+        $xml = \trim($xml);
+
+        // Base case
+        if ($xml === '') {
+            return true;
+        }
+
+        // Otherwise, pull out the first stanza (if any) and recurse
+        $matches = array();
+        $match = \preg_match('/^<([A-Za-z]+)([\s].*)?>/', $xml, $matches);
+        if ($match) {
+            $opening = $matches[1];
+        } else {
+            return false;
+        }
+
+        // Look for a matching closing tag
+        $closing = '</' . $opening . '>';
+        $closingPos = \strpos($xml, $closing);
+
+        if ($closingPos === false) {
+            // If not found, we can just return
+            return false;
+        } else {
+            // Otherwise, cut out the first stanza and check the rest of the string
+            $nextPos = $closingPos + \strlen($closing);
+            return $this->isMultipleElements(\substr($xml, $nextPos));
+        }
     }
 
     /**
