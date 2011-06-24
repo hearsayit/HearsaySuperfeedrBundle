@@ -52,31 +52,6 @@ class SuperfeedrTest extends WebTestCase
             $this->markTestSkipped("Can't test XMPP without an internet connection.");
         }
     }
-
-    /**
-     * Make sure we can subscribe to, and then unsubscribe from, a feed via
-     * Superfeedr.  Makes a live request to the Superfeedr server.
-     * @covers Hearsay\SuperfeedrBundle\Xmpp\Superfeedr
-     */
-    public function testSubscriptionAndUnsubscriptionPossible()
-    {
-        $subscriber = $this->getSuperfeedr();
-        $this->assertTrue($subscriber->subscribeTo('http://superfeedr.com/dummy.xml', true));
-        $this->assertTrue($subscriber->unsubscribeFrom('http://superfeedr.com/dummy.xml'));
-        $subscriber->disconnect();
-    }
-
-    /**
-     * Make sure we can't subscribe to nonexistent resources.  Makes a live
-     * request to the Superfeedr server.
-     * @covers Hearsay\SuperfeedrBundle\Xmpp\Superfeedr
-     */
-    public function testBadSubscriptionNotPossible()
-    {
-        $subscriber = $this->getSuperfeedr();
-        $this->assertFalse($subscriber->subscribeTo('not a url at all', false));
-        $subscriber->disconnect();
-    }
     
     /**
      * Make sure we can properly recognize complete buffers which are not
