@@ -21,7 +21,7 @@
 
 namespace Hearsay\SuperfeedrBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\Command;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,7 +32,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * most likely useful in conjunction with e.g. deamontools.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class ListenCommand extends Command
+class ListenCommand extends ContainerAwareCommand
 {
 
     /**

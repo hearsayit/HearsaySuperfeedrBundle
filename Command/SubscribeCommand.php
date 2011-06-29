@@ -22,7 +22,7 @@
 
 namespace Hearsay\SuperfeedrBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\Command;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,7 +32,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Command to subscribe to a feed.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class SubscribeCommand extends Command
+class SubscribeCommand extends ContainerAwareCommand
 {
     /**
      * {@inheritdoc}
