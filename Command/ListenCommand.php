@@ -51,15 +51,15 @@ class ListenCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $receiver = $this->container->get('hearsay_superfeedr.listener');
+        $receiver = $this->getContainer()->get('hearsay_superfeedr.listener');
         $output->writeln('Listening for messages...');
         try {
             $receiver->listen();
         } catch (\Exception $exception) {
             if ($exception instanceof \Hearsay\SuperfeedrBundle\Exception\TimeoutException) {
-                $this->container->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
+                $this->getContainer()->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
             } else {
-                $this->container->get('monolog.logger.superfeedr')->err('Caught ' . \get_class($exception) . ' while listening: ' . $exception->getMessage());
+                $this->getContainer()->get('monolog.logger.superfeedr')->err('Caught ' . \get_class($exception) . ' while listening: ' . $exception->getMessage());
             }
             if ($input->getOption('die')) {
                 die($exception->getMessage() . "\n");

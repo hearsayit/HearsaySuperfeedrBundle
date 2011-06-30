@@ -55,7 +55,7 @@ class SubscribeCommand extends ContainerAwareCommand
         $digest = $input->getOption('digest');
 
         // Just hand this off to the subscriber service
-        $success = $this->container->get('hearsay_superfeedr.subscriber')->subscribeTo($url, $digest);
+        $success = $this->getContainer()->get('hearsay_superfeedr.subscriber')->subscribeTo($url, $digest);
         
         if ($success) {
             $output->writeln('Successfully subscribed to ' . $url . '.');
