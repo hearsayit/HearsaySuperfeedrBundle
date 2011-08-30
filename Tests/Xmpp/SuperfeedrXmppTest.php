@@ -19,29 +19,23 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
+namespace Hearsay\SuperfeedrBundle\Tests\Xmpp;
 
-use Hearsay\SuperfeedrBundle\Handler\NotificationHandlerInterface;
+use Hearsay\SuperfeedrBundle\Xmpp\SuperfeedrXmpp;
 
 /**
- * Interface for classes which can receive Superfeedr notifications.
+ * Unit tests for the custom XMPP class.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-interface ListenerInterface
+class SuperfeedrXmppTest extends \PHPUnit_Framework_TestCase
 {
+    public function testSessionStartRegistered()
+    {
+        $xmpp = new SuperfeedrXmpp('superfeedr.com', 5222, 'user', 'pass');
+        
+        $this->assertFalse($xmpp->isSessionStarted(), 'Session marked as started prior to start event.');
 
-    /**
-     * Listen indefinitely for incoming messages.
-     * @throws Hearsay\SuperfeedrBundle\Exception\TimeoutException If the
-     * connection appears to be lost.
-     */
-    public function listen();
-    
-    /**
-     * Add a callback to be invoked when an XMPP notification is received.  The
-     * callback will be given the raw XML payload of the notification as its
-     * only parameter.
-     * @param NotificationHandlerInterface $handler The handler.
-     */
-    public function addNotificationHandler(NotificationHandlerInterface $handler);
+        $xmpp->event('session_start');
+        $this->assertTrue($xmpp->isSessionStarted(), 'Session not marked as started after start event.');
+    }
 }

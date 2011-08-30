@@ -22,14 +22,14 @@
 namespace Hearsay\SuperfeedrBundle\Xmpp;
 
 /**
- * Helper service to manage the actual subscription process for a connected
- * Superfeedr instance.
+ * Concrete subscriber service.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class SubscriptionHelper
+class Subscriber implements SubscriberInterface
 {
 
     /**
+     * Internal tracker for whether subscription requests were successful.
      * @var bool
      */
     private $successful = false;
@@ -50,6 +50,11 @@ class SubscriptionHelper
      * @var Superfeedr
      */
     protected $xmpp = null;
+    /**
+     * Subscribe/unsubscribe timeout in seconds.
+     * @var integer
+     */
+    protected $timeout = 5;
 
     /**
      * Standard constructor.
@@ -61,28 +66,19 @@ class SubscriptionHelper
     }
 
     /**
-     * Perform a subscribe request.
-     * @param string|array $urls The URL or URLs to subscribe to.
-     * @param bool $digest Whether to subscribe for digest updates.
-     * @param integer $timeout The number of seconds to wait for the request to
-     * complete.
-     * @return bool Whether the subscription was successful.
+     * {@inheritdoc}
      */
-    public function doSubscribe($urls, $digest, $timeout = 5)
+    public function subscribeTo($urls, $digest)
     {
-        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest, $timeout);
+        return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
     }
 
     /**
-     * Perform an unsubscribe request.
-     * @param string|array $urls The URL or URLs to unsubscribe from.
-     * @param integer $timeout The number of seconds to wait for the request to
-     * complete.
-     * @return bool Whether the unsubscribe request was successful.
+     * {@inheritdoc}
      */
-    public function doUnsubscribe($urls, $timeout = 5)
+    public function unsubscribeFrom($urls)
     {
-        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false, $timeout);
+        return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
     }
 
     /**
@@ -90,7 +86,7 @@ class SubscriptionHelper
      * successful.
      * @return bool Subscription success status.
      */
-    public function isSuccessful()
+    private function isSuccessful()
     {
         return $this->successful;
     }
@@ -102,10 +98,8 @@ class SubscriptionHelper
      * @param string|array $urls The URL or URLs to subscribe/unsubscribe.
      * @param bool $digest Whether to set the Superfeedr 'digest' attribute to
      * true on the subscription tags.
-     * @param integer $timeout The number of seconds to wait before timing out
-     * the subscribe request.
      */
-    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest, $timeout)
+    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest)
     {
         // Always work with an array of URLs
         if (!(\is_array($urls))) {
@@ -145,12 +139,12 @@ class SubscriptionHelper
         }
 
         $xml = $dom->saveXML($iq);
-        
+
         // Send and wait for a response
         $this->xmpp->addIdHandler($id, 'handleResponse', $this);
 
         $this->xmpp->send($xml);
-        $this->xmpp->processUntil('handle_subscription', $timeout);
+        $this->xmpp->processUntil('handle_subscription', $this->timeout);
 
         return $this->isSuccessful();
     }
@@ -165,10 +159,10 @@ class SubscriptionHelper
     {
         if ($response->attrs['type'] == 'result') {
             $this->successful = true;
-	} else {
+        } else {
             $this->successful = false;
-	}
+        }
         $this->xmpp->event('handle_subscription');
     }
-    
+
 }

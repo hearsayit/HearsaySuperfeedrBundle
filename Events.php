@@ -27,5 +27,13 @@ namespace Hearsay\SuperfeedrBundle;
  */
 final class Events
 {
-    const NOTIFICATION_RECEIVED = 'onNotificationReceived';
+    const NOTIFICATION_RECEIVED = 'notification.received';
+    
+    /**
+     * Event to be dispatched when an XMPP notification is received.  Listeners
+     * receive an instance of 
+     * <code>Hearsay\SuperfeedrBundle\Event\NotifactionReceivedEvent</code>.
+     * @var string
+     */
+    const onNotificationReceived = 'notification.received';
 }

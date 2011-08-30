@@ -25,7 +25,7 @@ namespace Hearsay\SuperfeedrBundle\Handler;
  * Interface for classes which can receive and process XMPP notifications.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-interface HandlerInterface
+interface NotificationHandlerInterface
 {
     /**
      * Process an XMPP message.

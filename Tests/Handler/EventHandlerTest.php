@@ -30,7 +30,7 @@ use Liip\FunctionalTestBundle\Test\WebTestCase;
  * Unit and functional tests for the event-dispatching notification handler.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class EventHandlerTest extends WebTestCase
+class EventHandlerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Make sure we can properly parse a message and dispatch a related event.

@@ -33,15 +33,15 @@ class NotificationReceivedEvent extends Event
     /**
      * @var string
      */
-    private $url = null;
+    protected $url = null;
     /**
      * @var array
      */
-    private $items = null;
+    protected $items = null;
     /**
      * @var bool
      */
-    private $digest = null;
+    protected $digest = null;
 
     /**
      * Standard constructor.
