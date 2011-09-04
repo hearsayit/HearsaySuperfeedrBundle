@@ -19,121 +19,23 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Tests\Xmpp;
+namespace Hearsay\SuperfeedrBundle\Tests\Listening;
 
-use Hearsay\SuperfeedrBundle\Xmpp\Superfeedr;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Hearsay\SuperfeedrBundle\Listening\Listener;
 
 /**
- * Tests for the Superfeedr connection.
+ * Unit tests for the listener.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class SuperfeedrTest extends WebTestCase
+class ListenerTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * Get the configured Superfeedr service.
-     * @return Superfeedr The Superfeedr connection.
-     */
-    protected function getSuperfeedr()
-    {
-        return $this->getContainer()->get('hearsay_superfeedr.superfeedr');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp()
-    {
-        // We can't do anything without an internet connection
-        try {
-            \fsockopen('www.google.com', 80);
-        } catch (\Exception $e) {
-            $this->markTestSkipped("Can't test XMPP without an internet connection.");
-        }
-    }
-    
-    /**
-     * Make sure we can properly recognize complete buffers which are not
-     * otherwise recognized by the base XMPP class, in particular buffers
-     * consisting of two sister XML tags.
-     * @covers Hearsay\SuperfeedrBundle\Xmpp\Superfeedr
-     */
-    public function testNonstandardBufferComplete()
-    {
-        $superfeedr = new Superfeedr('user', 'pass');
-        $method = new \ReflectionMethod('Hearsay\SuperfeedrBundle\Xmpp\Superfeedr', 'bufferComplete');
-        $method->setAccessible(true);
-        
-        // We use an actual problem buffer
-        $xml = <<<XML
-<iq from='firehoser.superfeedr.com' to='hearsayer@superfeedr.com/superfeedr' type='result' id='10'>
-  <pubsub xmlns='http://jabber.org/protocol/pubsub'>
-    <subscription node='http://feeds.feedburner.com/crunchgear' jid='hearsayer@superfeedr.com' subscription='subscribed'>
-      <status xmlns='http://superfeedr.com/xmpp-pubsub-ext'>
-        <http code='304'>Content not modified</http>
-        <next_fetch>2011-06-13T06:42:37+00:00</next_fetch>
-        <title>CrunchGear</title>
-        <period>900</period>
-        <last_fetch>2011-06-13T06:27:46+00:00</last_fetch>
-        <last_parse>2011-06-12T15:38:52+00:00</last_parse>
-        <last_maintenance_at>2011-06-11T13:13:42+00:00</last_maintenance_at>
-      </status>
-    </subscription>
-  </pubsub>
-</iq><message from='firehoser.superfeedr.com' to='hearsayer@superfeedr.com'>
-  <event xmlns='http://jabber.org/protocol/pubsub#event'>
-    <status xmlns='http://superfeedr.com/xmpp-pubsub-ext' feed='http://feeds.latimes.com/latimes/entertainment/'>
-      <http code='200'>20175B in 0.285253228s, 5/10 new entries</http>
-      <next_fetch>2011-06-13T19:03:27Z</next_fetch>
-      <title>L.A. Times - Entertainment News</title>
-      <subtitle>Headlines from latimes.com</subtitle>
-      <entries_count_since_last_maintenance>24</entries_count_since_last_maintenance>
-      <period>43200</period>
-      <last_fetch>2011-06-13T06:34:21Z</last_fetch>
-      <last_parse>2011-06-13T06:34:21Z</last_parse>
-      <last_maintenance_at>2011-06-12T14:14:57+00:00</last_maintenance_at>
-      <link href='http://www.latimes.com/entertainment/news/?track=rss' title='' type='text/html' rel='alternate'/>
-      <link href='http://feeds.latimes.com/latimes/entertainment' title='' type='application/rss+xml' rel='self'/>
-      <link href='http://pubsubhubbub.appspot.com/' title='' type='text/html' rel='hub'/>
-    </status>
-    <items node='http://feeds.latimes.com/latimes/entertainment/'>
-      <item xmlns='http://jabber.org/protocol/pubsub'>
-        <entry xmlns='http://www.w3.org/2005/Atom' xmlns:geo='http://www.georss.org/georss' xmlns:as='http://activitystrea.ms/spec/1.0/' xmlns:sf='http://superfeedr.com/xmpp-pubsub-ext' xml:lang='en'>
-          <id>best-and-worst-of-the-2011-tony-awards-2011-06-13t04-28-46z</id>
-          <published>2011-06-13T04:28:46Z</published>
-          <updated>2011-06-13T04:28:46Z</updated>
-          <title>Best and Worst of the 2011 Tony Awards</title>
-          <summary type='html'>Neil Patrick Harris outdoes himself, Frances McDormand dresses down and more highlights and lowlights from the 2011 Tony Awards.
-&lt;p&gt;&lt;a href=&quot;http://feedads.g.doubleclick.net/~at/EBCu_t4-KvQ3GVife-VeYOwfOZU/0/da&quot;&gt;&lt;img src=&quot;http://feedads.g.doubleclick.net/~at/EBCu_t4-KvQ3GVife-VeYOwfOZU/0/di&quot; border=&quot;0&quot; ismap=&quot;true&quot;&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
-&lt;a href=&quot;http://feedads.g.doubleclick.net/~at/EBCu_t4-KvQ3GVife-VeYOwfOZU/1/da&quot;&gt;&lt;img src=&quot;http://feedads.g.doubleclick.net/~at/EBCu_t4-KvQ3GVife-VeYOwfOZU/1/di&quot; border=&quot;0&quot; ismap=&quot;true&quot;&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src=&quot;http://feeds.feedburner.com/~r/latimes/entertainment/~4/M9ITKEJrcqI&quot; height=&quot;1&quot; width=&quot;1&quot;/&gt;</summary>
-          <link rel='alternate' type='text/html' href='http://feeds.latimes.com/~r/latimes/entertainment/~3/M9ITKEJrcqI/env-best-worst-tonys-sl,0,5290583.storylink' title='Best and Worst of the 2011 Tony Awards'/>
-          <link rel='thumbnail' type='image/jpeg' href='http://www.latimes.com/media/thumbnails/storylink/2011-06/62323375-12212809.jpg' title='Best and Worst of the 2011 Tony Awards'/>
-          <link rel='enclosure' type='image/jpeg' href='http://www.latimes.com/media/alternatethumbnails/storylink/2011-06/62323375-12212810.jpg' title='Best and Worst of the 2011 Tony Awards'/>
-          <link rel='alternate' type='text/html' href='http://www.latimes.com/entertainment/news/env-best-worst-tonys-sl,0,5290583.storylink?track=rss' title='Best and Worst of the 2011 Tony Awards'/>
-        </entry>
-      </item>
-    </items>
-  </event>
-</message>
-XML;
-        // Run the buffer through a few times
-        $this->assertFalse($method->invoke($superfeedr, $xml, 2));
-        $this->assertFalse($method->invoke($superfeedr, $xml, 2));
-        $this->assertFalse($method->invoke($superfeedr, $xml, 2));
-        
-        // Now pass in the whole thing and make sure we can process it
-        $this->assertTrue($method->invoke($superfeedr, $xml, 2));
-    }
-
-    /**
      * Make sure we can receive messages and send their data to our receiver.
-     * @covers Hearsay\SuperfeedrBundle\Xmpp\Superfeedr
-     * @covers Hearsay\SuperfeedrBundle\Handler\HandlerInterface
      */
     public function testMessageHandled()
     {
-        // We use an actual received message
+        // We use an actual received message (a serialized XMPPHP_XMLObj)
         $serialized = <<<SER
 O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:7:"message";s:2:"ns";s:13:"jabber:client";s:5:"attrs";a:2:{s:4:"from";s:24:"firehoser.superfeedr.com";s:2:"to";s:24:"hearsayer@superfeedr.com";}s:4:"subs";a:1:{i:0;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:5:"event";s:2:"ns";s:39:"http://jabber.org/protocol/pubsub#event";s:5:"attrs";a:1:{s:5:"xmlns";s:39:"http://jabber.org/protocol/pubsub#event";}s:4:"subs";a:2:{i:0;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:6:"status";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:2:{s:5:"xmlns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:4:"feed";s:31:"http://star-wars.alltop.com/rss";}s:4:"subs";a:11:{i:0;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:4:"http";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:1:{s:4:"code";s:3:"200";}s:4:"subs";a:0:{}s:4:"data";s:41:"74972B in 1.117581297s, 2/100 new entries";}i:1;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:10:"next_fetch";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:20:"2011-06-10T07:53:29Z";}i:2;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:5:"title";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:10:"Alltop RSS";}i:3;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:8:"subtitle";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:40:"Alltop RSS feed for star-wars.alltop.com";}i:4;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:36:"entries_count_since_last_maintenance";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:2:"53";}i:5;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:6:"period";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:3:"225";}i:6;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:10:"last_fetch";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:20:"2011-06-10T07:49:38Z";}i:7;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:10:"last_parse";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:20:"2011-06-10T07:49:38Z";}i:8;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:19:"last_maintenance_at";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:0:{}s:4:"subs";a:0:{}s:4:"data";s:25:"2011-06-09T22:31:47+00:00";}i:9;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:4:"link";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:4:{s:4:"href";s:27:"http://star-wars.alltop.com";s:5:"title";s:0:"";s:4:"type";s:9:"text/html";s:3:"rel";s:9:"alternate";}s:4:"subs";a:0:{}s:4:"data";s:0:"";}i:10;O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:4:"link";s:2:"ns";s:37:"http://superfeedr.com/xmpp-pubsub-ext";s:5:"attrs";a:4:{s:4:"href";s:32:"http://star-wars.alltop.com/rss/";s:5:"title";s:0:"";s:4:"type";s:19:"application/rss+xml";s:3:"rel";s:4:"self";}s:4:"subs";a:0:{}s:4:"data";s:0:"";}}s:4:"data";s:82:"
       
@@ -175,7 +77,7 @@ O:13:"XMPPHP_XMLObj":5:{s:4:"name";s:7:"message";s:2:"ns";s:13:"jabber:client";s
   
 ";}
 SER;
-        $xml = \unserialize($serialized);
+        $message = \unserialize($serialized);
         $raw = <<<RAW
 <message xmlns='jabber:client' from='firehoser.superfeedr.com' to='hearsayer@superfeedr.com' >
     <event xmlns='http://jabber.org/protocol/pubsub#event' >
@@ -216,29 +118,36 @@ SER;
   </event>
 </message>
 RAW;
-        $payload = simplexml_load_string($raw)->event->asXml();
+        $expectedPayload = simplexml_load_string($raw)->event->asXml();
 
         // Sanity check for the payload
-        $this->assertTrue(\strpos($payload, '<event ') === 0);
+        $this->assertTrue(\strpos($expectedPayload, '<event ') === 0, 'Payload did not load properly (sanity check failed)');
 
-        $handler = $this->getMock('Hearsay\SuperfeedrBundle\Handler\HandlerInterface');
-
-        $receiver = $this->getMockBuilder('Hearsay\SuperfeedrBundle\Xmpp\Superfeedr')
+        // Create the listener
+        $xmpp = $this->getMockBuilder('Hearsay\SuperfeedrBundle\Xmpp\SuperfeedrXmpp')
                 ->disableOriginalConstructor()
-                ->setMethods(array('subscribeTo'))
                 ->getMock();
-        $receiver->setHandler($handler);
+        $xmpp->expects($this->never())
+                ->method($this->anything());
+        $logger = $this->getMock('Symfony\Component\HttpKernel\Log\LoggerInterface');
+        $listener = new Listener($xmpp, $logger);
 
-        $received = null;
+        // Add the handler
+        $handler = $this->getMock('Hearsay\SuperfeedrBundle\Listening\NotificationHandlerInterface');
+        $listener->addNotificationHandler($handler);
+
+        // Store the actual payload sent to the handler
+        $actualPayload = null;
         $handler->expects($this->once())
                 ->method('handleNotification')
-                ->will($this->returnCallback(function($actual) use (&$received) {
-                                    $received = $actual;
+                ->will($this->returnCallback(function($payload) use (&$actualPayload) {
+                                    $actualPayload = $payload;
                                 }));
 
-        $receiver->handleMessage($xml);
+        // Invoke the handler
+        $listener->handleMessage($message);
 
-        $this->assertXmlStringEqualsXmlString($received, $payload);
+        $this->assertXmlStringEqualsXmlString($actualPayload, $expectedPayload, 'Unexpected payload received');
     }
 
 }

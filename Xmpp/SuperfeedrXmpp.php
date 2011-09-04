@@ -83,6 +83,27 @@ class SuperfeedrXmpp extends \XMPPHP_XMPP
     }
 
     /**
+     * Set the number of times to check an unchanging incomplete buffer for
+     * completeness before performing a more expensive, but more thorough,
+     * completeness check.
+     * @param integer $expensiveIterations Number of iterations.
+     */
+    public function setExpensiveIterations($expensiveIterations)
+    {
+        $this->expensiveIterations = $expensiveIterations;
+    }
+
+    /**
+     * Set the number of times we should check an unchanging incomplete buffer
+     * for completeness before assuming that the connection has been lost.
+     * @param integer $maxIncompleteIterations Number of iterations.
+     */
+    public function setMaxIncompleteIterations($maxIncompleteIterations)
+    {
+        $this->maxIncompleteIterations = $maxIncompleteIterations;
+    }
+
+    /**
      * Responder to the <code>session_start</code> event.  Store the started
      * state.
      */
@@ -99,7 +120,7 @@ class SuperfeedrXmpp extends \XMPPHP_XMPP
     {
         return $this->sessionStarted;
     }
-
+    
     /**
      * Custom connection function which also stores our connected state.
      * 

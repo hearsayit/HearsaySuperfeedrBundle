@@ -19,13 +19,13 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
+namespace Hearsay\SuperfeedrBundle\Subscription;
 
 /**
- * Concrete subscriber service.
+ * Concrete direct subscriber service.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class Subscriber implements SubscriberInterface
+class SubscriptionAdapter implements SubscriptionAdapterInterface
 {
 
     /**
@@ -68,7 +68,7 @@ class Subscriber implements SubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public function subscribeTo($urls, $digest)
+    public function subscribeTo(array $urls, $digest)
     {
         return $this->subscribeOrUnsubscribe('subscribe', $urls, $digest);
     }
@@ -76,7 +76,7 @@ class Subscriber implements SubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public function unsubscribeFrom($urls)
+    public function unsubscribeFrom(array $urls)
     {
         return $this->subscribeOrUnsubscribe('unsubscribe', $urls, false);
     }
@@ -95,17 +95,12 @@ class Subscriber implements SubscriberInterface
      * Helper function to avoid repetition for subscription and unsubscription.
      * @param string $subscribeNode The name of the element describing a
      * subscribe or unsubscribe request, e.g. 'subscribe' or 'unsubscribe'.
-     * @param string|array $urls The URL or URLs to subscribe/unsubscribe.
+     * @param array $urls The URLs to subscribe/unsubscribe.
      * @param bool $digest Whether to set the Superfeedr 'digest' attribute to
      * true on the subscription tags.
      */
-    private function subscribeOrUnsubscribe($subscribeNode, $urls, $digest)
+    private function subscribeOrUnsubscribe($subscribeNode, array $urls, $digest)
     {
-        // Always work with an array of URLs
-        if (!(\is_array($urls))) {
-            $urls = array($urls);
-        }
-
         $jid = $this->xmpp->user . '@' . $this->xmpp->server;
         $id = $this->xmpp->getId();
 

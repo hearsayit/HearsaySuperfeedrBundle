@@ -23,8 +23,7 @@ namespace Hearsay\SuperfeedrBundle\Tests\Handler;
 
 use Hearsay\SuperfeedrBundle\Events;
 use Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent;
-use Hearsay\SuperfeedrBundle\Handler\EventHandler;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Hearsay\SuperfeedrBundle\Listening\EventHandler;
 
 /**
  * Unit and functional tests for the event-dispatching notification handler.
@@ -34,9 +33,6 @@ class EventHandlerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Make sure we can properly parse a message and dispatch a related event.
-     * @covers Hearsay\SuperfeedrBundle\Events
-     * @covers Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent
-     * @covers Hearsay\SuperfeedrBundle\Handler\EventHandler
      */
     public function testNotificationParsed()
     {
@@ -177,9 +173,6 @@ EXP;
     
     /**
      * Make sure we can properly parse digest events.
-     * @covers Hearsay\SuperfeedrBundle\Events
-     * @covers Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent
-     * @covers Hearsay\SuperfeedrBundle\Handler\EventHandler
      */
     public function testDigestParsed()
     {

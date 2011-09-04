@@ -19,7 +19,7 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Handler;
+namespace Hearsay\SuperfeedrBundle\Listening;
 
 use Hearsay\SuperfeedrBundle\Events;
 use Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent;
@@ -29,7 +29,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * Service to handle XMPP notifications by dispatching an event.
  * @author Kevin Montag
  */
-class EventHandler implements HandlerInterface
+class EventHandler implements NotificationHandlerInterface
 {
 
     /**
@@ -75,7 +75,7 @@ class EventHandler implements HandlerInterface
         $event = new NotificationReceivedEvent($url, $entries, $digest);
 
         // Dispatch the event
-        $this->dispatcher->dispatch(Events::NOTIFICATION_RECEIVED, $event);
+        $this->dispatcher->dispatch(Events::onNotificationReceived, $event);
     }
 
 }

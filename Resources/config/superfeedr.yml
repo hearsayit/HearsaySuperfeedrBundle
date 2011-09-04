@@ -1,0 +1,73 @@
+##
+#  The Hearsay Superfeedr bundle for Symfony2.
+#  Copyright (C) 2011 Hearsay News Products, Inc.
+# 
+#  This program is free software; you can redistribute it and/or modify it 
+#  under the terms of the GNU General Public License as published by the Free 
+#  Software Foundation; either version 2 of the License, or (at your option) any
+#  later version.
+# 
+#  This program is distributed in the hope that it will be useful, but WITHOUT 
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+#  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
+#  details.
+# 
+#  You should have received a copy of the GNU General Public License along with 
+#  this program; if not, write to the Free Software Foundation, Inc., 51 
+#  Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
+
+parameters:
+    hearsay_superfeedr.xmpp.class: Hearsay\SuperfeedrBundle\Xmpp\SuperfeedrXmpp
+    hearsay_superfeedr.username: null
+    hearsay_superfeedr.password: null
+    hearsay_superfeedr.port: 5222
+    hearsay_superfeedr.host: xmpp.superfeedr.com
+    hearsay_superfeedr.resource: superfeedr
+    hearsay_superfeedr.server: superfeedr.com
+    
+    hearsay_superfeedr.subscriber.class: Hearsay\SuperfeedrBundle\Subscription\Subscriber
+    hearsay_superfeedr.subscription_adapter.type: null
+    
+    hearsay_superfeedr.listener.class: Hearsay\SuperfeedrBundle\Listening\Listener
+    hearsay_superfeedr.listener_timeout: null
+
+services:
+    hearsay_superfeedr.xmpp:
+        class: %hearsay_superfeedr.xmpp.class%
+        public: false
+        arguments:
+            - %hearsay_superfeedr.host%
+            - %hearsay_superfeedr.port%
+            - %hearsay_superfeedr.username%
+            - %hearsay_superfeedr.password%
+            - %hearsay_superfeedr.resource%
+            - %hearsay_superfeedr.server%
+            
+    hearsay_superfeedr.subscriber:
+        class: %hearsay_superfeedr.subscriber.class%
+        arguments:
+            - '@hearsay_superfeedr.subscription_adapter'
+            - '@hearsay_superfeedr.subscription_logger'
+    hearsay_superfeedr.subscription_adapter.default:
+        class: Hearsay\SuperfeedrBundle\Subscription\SubscriptionAdapter
+        public: false
+        arguments:
+            - '@hearsay_superfeedr.xmpp'
+    hearsay_superfeedr.subscription_adapter.test:
+        class: Hearsay\SuperfeedrBundle\Subscription\TestSubscriptionAdapter
+    hearsay_superfeedr.subscription_logger:
+        class: Hearsay\SuperfeedrBundle\Logger\SubscriptionLogger
+        arguments:
+            - '@monolog.logger'
+        tags:
+            - { name: monolog.logger, channel: superfeedr }
+        
+    hearsay_superfeedr.listener:
+        class: %hearsay_superfeedr.listener.class%
+        methods:
+            - ['addNotificationHandler', ['@hearsay_superfeedr.event_handler']]
+            - ['setTimeout', [%hearsay_superfeedr.listener_timeout%]]
+    hearsay_superfeedr.event_handler:
+        class: Hearsay\SuperfeedrBundle\Listening\EventHandler
+        arguments:
+            - '@event_dispatcher'

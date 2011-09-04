@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * The Hearsay Superfeedr bundle for Symfony2.
  * Copyright (C) 2011 Hearsay News Products, Inc.
@@ -58,10 +57,11 @@ class SubscribeCommand extends ContainerAwareCommand
         $success = $this->getContainer()->get('hearsay_superfeedr.subscriber')->subscribeTo($url, $digest);
         
         if ($success) {
-            $output->writeln('Successfully subscribed to ' . $url . '.');
+            $output->writeln(sprintf('<info>Successfully subscribed to "%s".</info>', $url));
+            return 0;
         } else {
-            throw new \Exception('There was a problem with the subscription.');
+            $output->writeln(sprintf('<error>There was a problem subscribing to "%s".</error>', $url));
+            return 1;
         }
-        
     }
 }

@@ -19,27 +19,35 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
+namespace Hearsay\SuperfeedrBundle\Logger;
 
 /**
- * Interface to be implemented by services which can subscribe to feeds.
+ * Simple structure describing an attempt to unsubscribe from a resource.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-interface SubscriberInterface
+class UnsubscribeAttempt
 {
+
     /**
-     * Subscribe to receive updates from the given resource(s).
-     * @param string|array $urls The URL of the resource, or an array of URLs.
-     * @param bool $digest Whether to subscribe for digest updates on the
-     * resources.
-     * @return bool Whether the subscription request was successful.
+     * Whether the attempt was successful.
+     * @var boolean
      */
-    public function subscribeTo($urls, $digest);
-    
+    public $successful;
     /**
-     * Unsubscribe from updates on the given resource(s).
-     * @param string|arrray $urls The URL of the resource, or an array of URLs.
-     * @return bool Whether the subscription request was successful.
+     * The target resource URLs.
+     * @var array
      */
-    public function unsubscribeFrom($urls);
+    public $urls;
+
+    /**
+     * Standard constructor.
+     * @var boolean $successful
+     * @var array $urls
+     */
+    public function __construct($successful, array $urls)
+    {
+        $this->successful = $successful;
+        $this->urls = $urls;
+    }
+
 }

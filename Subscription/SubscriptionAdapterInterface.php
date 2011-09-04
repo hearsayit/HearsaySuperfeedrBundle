@@ -19,29 +19,30 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Xmpp;
-
-use Hearsay\SuperfeedrBundle\Handler\NotificationHandlerInterface;
+namespace Hearsay\SuperfeedrBundle\Subscription;
 
 /**
- * Interface for classes which can receive Superfeedr notifications.
+ * Interface for services which can perform direct subscription to Superfeedr
+ * resources.  Should generally be used in conjunction with a 
+ * <code>SubscriberInterface</code>, which offers more complete subscription
+ * functionality.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-interface ListenerInterface
+interface SubscriptionAdapterInterface
 {
 
     /**
-     * Listen indefinitely for incoming messages.
-     * @throws Hearsay\SuperfeedrBundle\Exception\TimeoutException If the
-     * connection appears to be lost.
+     * Subscribe to a set of resources.
+     * @param array $urls The resource URLs.
+     * @param boolean $digest Whether to subscribe for digest updates.
+     * @return boolean Whether the subscription was successful.
      */
-    public function listen();
-    
+    public function subscribeTo(array $urls, $digest);
+
     /**
-     * Add a callback to be invoked when an XMPP notification is received.  The
-     * callback will be given the raw XML payload of the notification as its
-     * only parameter.
-     * @param NotificationHandlerInterface $handler The handler.
+     * Unsubscribe from a set of resources.
+     * @param array $urls The resource URLs.
+     * @return boolean Whether the unsubscription was successful.
      */
-    public function addNotificationHandler(NotificationHandlerInterface $handler);
+    public function unsubscribeFrom(array $urls);
 }

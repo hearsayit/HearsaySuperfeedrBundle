@@ -19,23 +19,42 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Test;
+namespace Hearsay\SuperfeedrBundle\Logger;
 
 /**
- * Helper class to parse XML into <code>XMPPHP_XMLObj</code> objects.
+ * Simple structure for storing data about a subscription attempt.
  * @author Kevin Montag <kevin@hearsay.it>
  */
-class XmlParser extends \XMPPHP_XMLStream
+class SubscribeAttempt
 {
-    
+
     /**
-     * Get the XML object for the given raw XML.
-     * @param string $xml The raw XML.
-     * @return \XMPPHP_XMLObj The XML object.
+     * Whether the attempt was successful.
+     * @var boolean
      */
-    public function getObject($xml)
+    public $successful;
+    /**
+     * The target resource URLs.
+     * @var array
+     */
+    public $urls;
+    /**
+     * Whether the request included digest updates.
+     * @var boolean
+     */
+    public $digest;
+
+    /**
+     * Standard constructor.
+     * @param boolean $successful
+     * @param array $urls
+     * @param boolean $digest 
+     */
+    public function __construct($successful, array $urls, $digest)
     {
-        xml_parse($this->parser, $xml);
-        return $this->xmlobj;
+        $this->successful = $successful;
+        $this->urls = $urls;
+        $this->digest = $digest;
     }
+
 }

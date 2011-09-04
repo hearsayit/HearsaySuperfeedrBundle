@@ -19,7 +19,7 @@
  * Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
  */
 
-namespace Hearsay\SuperfeedrBundle\Handler;
+namespace Hearsay\SuperfeedrBundle\Listening;
 
 /**
  * Interface for classes which can receive and process XMPP notifications.

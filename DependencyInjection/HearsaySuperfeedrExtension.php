@@ -23,10 +23,11 @@ namespace Hearsay\SuperfeedrBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Definition\Processor;
+use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -40,8 +41,8 @@ class HearsaySuperfeedrExtension extends Extension
      */
     public function load(array $config, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . "/../Resources/config"));
-        $loader->load('superfeedr.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('superfeedr.yml');
         
         $processor = new Processor();
 
@@ -50,13 +51,10 @@ class HearsaySuperfeedrExtension extends Extension
         
         $container->setParameter('hearsay_superfeedr.username', $config['username']);
         $container->setParameter('hearsay_superfeedr.password', $config['password']);
+        $container->setParameter('hearsay_superfeedr.subscription_adapter.type', $config['subscription_adapter']);
         $container->setParameter('hearsay_superfeedr.listener_timeout', $config['listener_timeout']);
         
-        if ($config['test']) {
-            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.test_subscriber');
-        } else {
-            $container->setAlias('hearsay_superfeedr.subscriber', 'hearsay_superfeedr.superfeedr');
-        }
+        $container->setAlias('hearsay_superfeedr.subscription_adapter', new Alias('hearsay_superfeedr.subscription_adapter.' . $config['subscription_adapter'], false));
     }
     
 }
