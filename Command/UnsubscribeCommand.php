@@ -56,9 +56,11 @@ class UnsubscribeCommand extends ContainerAwareCommand
         $success = $this->getContainer()->get('hearsay_superfeedr.subscriber')->unsubscribeFrom($url);
         
         if ($success) {
-            $output->writeln('Successfully unsubscribed from ' . $url . '.');
+            $output->writeln(sprintf('Successfully unsubscribed from <info>"%s"</info>.', $url));
+            return 0;
         } else {
-            throw new \Exception('There was a problem unsubscribing.');
+            $output->writeln(sprintf('<error>There was a problem unsubscribing from "%s".</error>', $url));
+            return 1;
         }
     }
 

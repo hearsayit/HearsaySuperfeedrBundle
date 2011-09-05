@@ -22,6 +22,7 @@
 namespace Hearsay\SuperfeedrBundle\Tests\Command;
 
 use Hearsay\SuperfeedrBundle\Command\SubscribeCommand;
+use Hearsay\SuperfeedrBundle\Logger\SubscribeAttempt;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -32,6 +33,10 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 class SubscribeCommandTest extends WebTestCase
 {
+    /**
+     * Test non-digest subscription.
+     * @covers Hearsay\SuperfeedrBundle\Command\SubscribeCommand
+     */
     public function testSubscribed()
     {
         $kernel = $this->createKernel();
@@ -48,12 +53,45 @@ class SubscribeCommandTest extends WebTestCase
         $command = $application->find('superfeedr:subscribe');
         $commandTester = new CommandTester($command);
         $commandTester->execute(array('command' => 'superfeedr:subscribe', 'url' => 'http://www.google.com'));
+
+        // Check the output
+        $this->assertRegExp('#Successfully subscribed to "http://www.google.com"\.#', $commandTester->getDisplay(), 'Incorrect command output');
         
-        
+        // Check the logger to make sure a subscription occurred
+        /* @var $logger \Hearsay\SuperfeedrBundle\Logger\SubscriptionLogger */
+        $logger = $container->get('hearsay_superfeedr.subscription_logger');
+        $this->assertEquals(1, $logger->countSubscribeAttempts(), 'Incorrect number of subscriptions');
+        $this->assertEquals(array(new SubscribeAttempt(true, array('http://www.google.com'), false)), $logger->getSubscribeAttempts(), 'Incorrect subscribe attempt data');
     }
-    
+
+    /**
+     * Test digest subscription.
+     * @covers Hearsay\SuperfeedrBundle\Command\SubscribeCommand
+     */
     public function testSubscribedWithDigest()
     {
+        $kernel = $this->createKernel();
+        $kernel->boot();
+        $application = new Application($kernel);
+        $application->add(new SubscribeCommand());
         
+        // Make sure we're not testing in a live setting
+        $container = $kernel->getContainer();
+        if (!($container->getParameter('hearsay_superfeedr.subscription_adapter.type') === 'test')) {
+            $this->markTestSkipped('Cannot test Superfeedr susbcriptions in a live setting');
+        }
+        
+        $command = $application->find('superfeedr:subscribe');
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(array('command' => 'superfeedr:subscribe', 'url' => 'http://www.google.com', '--digest' => true));
+
+        // Check the output
+        $this->assertRegExp('#Successfully subscribed to "http://www.google.com"\.#', $commandTester->getDisplay(), 'Incorrect command output');
+        
+        // Check the logger to make sure a subscription occurred
+        /* @var $logger \Hearsay\SuperfeedrBundle\Logger\SubscriptionLogger */
+        $logger = $container->get('hearsay_superfeedr.subscription_logger');
+        $this->assertEquals(1, $logger->countSubscribeAttempts(), 'Incorrect number of subscriptions');
+        $this->assertEquals(array(new SubscribeAttempt(true, array('http://www.google.com'), true)), $logger->getSubscribeAttempts(), 'Incorrect subscribe attempt data');        
     }
 }

@@ -21,6 +21,8 @@
 
 namespace Hearsay\SuperfeedrBundle\Subscription;
 
+use Hearsay\SuperfeedrBundle\Xmpp\SuperfeedrXmpp;
+
 /**
  * Concrete direct subscriber service.
  * @author Kevin Montag <kevin@hearsay.it>
@@ -47,7 +49,7 @@ class SubscriptionAdapter implements SubscriptionAdapterInterface
     protected $superfeedrXmlns = 'http://superfeedr.com/xmpp-pubsub-ext';
     /**
      * The connection to use for subscribing.
-     * @var Superfeedr
+     * @var SuperfeedrXmpp
      */
     protected $xmpp = null;
     /**
@@ -58,11 +60,20 @@ class SubscriptionAdapter implements SubscriptionAdapterInterface
 
     /**
      * Standard constructor.
-     * @param Superfeedr $xmpp The connection to use for subscribing.
+     * @param SuperfeedrXmpp $xmpp The connection to use for subscribing.
      */
-    public function __construct(Superfeedr $xmpp)
+    public function __construct(SuperfeedrXmpp $xmpp)
     {
         $this->xmpp = $xmpp;
+    }
+
+    /**
+     * Set the timeout for XMPP operations.
+     * @param integer $timeout Timeout in seconds.
+     */
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
     }
 
     /**
@@ -101,6 +112,14 @@ class SubscriptionAdapter implements SubscriptionAdapterInterface
      */
     private function subscribeOrUnsubscribe($subscribeNode, array $urls, $digest)
     {
+        // Connect and start session
+        if (!($this->xmpp->isConnected())) {
+            $this->xmpp->connect($this->timeout);
+        }
+        if (!($this->xmpp->isSessionStarted())) {
+            $this->xmpp->processUntil(array('session_start', 'end_stream'), $this->timeout);
+        }
+        
         $jid = $this->xmpp->user . '@' . $this->xmpp->server;
         $id = $this->xmpp->getId();
 

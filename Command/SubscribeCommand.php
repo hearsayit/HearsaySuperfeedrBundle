@@ -57,7 +57,7 @@ class SubscribeCommand extends ContainerAwareCommand
         $success = $this->getContainer()->get('hearsay_superfeedr.subscriber')->subscribeTo($url, $digest);
         
         if ($success) {
-            $output->writeln(sprintf('<info>Successfully subscribed to "%s".</info>', $url));
+            $output->writeln(sprintf('Successfully subscribed to <info>"%s"</info>.', $url));
             return 0;
         } else {
             $output->writeln(sprintf('<error>There was a problem subscribing to "%s".</error>', $url));

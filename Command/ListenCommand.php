@@ -62,7 +62,9 @@ class ListenCommand extends ContainerAwareCommand
                 $this->getContainer()->get('monolog.logger.superfeedr')->err('Caught ' . \get_class($exception) . ' while listening: ' . $exception->getMessage());
             }
             if ($input->getOption('die')) {
+                // @codeCoverageIgnoreStart
                 die($exception->getMessage() . "\n");
+                // @codeCoverageIgnoreEnd
             } else {
                 throw $exception;
             }

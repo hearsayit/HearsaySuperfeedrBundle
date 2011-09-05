@@ -71,3 +71,10 @@ services:
         class: Hearsay\SuperfeedrBundle\Listening\EventHandler
         arguments:
             - '@event_dispatcher'
+    
+    hearsay_superfeedr.data_collector:
+        class: Hearsay\SuperfeedrBundle\DataCollector\SubscriptionDataCollector
+        arguments:
+            - '@hearsay_superfeedr.subscription_logger'
+        tags:
+            - { name: data_collector }

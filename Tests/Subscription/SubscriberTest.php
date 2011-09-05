@@ -45,7 +45,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase
                 ->with(true, array('http://www.google.com'), true);
         
         $subscriber = new Subscriber($adapter, $logger);
-        $subscriber->subscribeTo('http://www.google.com', true);
+        $success = $subscriber->subscribeTo('http://www.google.com', true);
+        $this->assertTrue($success, 'Subscription expected to be successful');
     }
     
     public function testSubscriptionWithMultipleResources()
@@ -64,8 +65,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase
                 ->with(false, array('http://www.google.com', 'http://www.bing.com'), true);
         
         $subscriber = new Subscriber($adapter, $logger);
-        $subscriber->subscribeTo(array('http://www.google.com', 'http://www.bing.com'), true);
-        
+        $success = $subscriber->subscribeTo(array('http://www.google.com', 'http://www.bing.com'), true);
+        $this->assertFalse($success, 'Subscription not expected to be successful');
     }
     
     public function testUnsubscriptionWithSingleResource()
@@ -84,7 +85,8 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase
                 ->with(true, array('http://www.google.com'));
         
         $subscriber = new Subscriber($adapter, $logger);
-        $subscriber->unsubscribeFrom('http://www.google.com');        
+        $success = $subscriber->unsubscribeFrom('http://www.google.com');        
+        $this->assertTrue($success, 'Unsubscription expected to be successful');
     }
     
     public function testUnsubscriptionWithMultipleResources()
@@ -103,7 +105,7 @@ class SubscriberTest extends \PHPUnit_Framework_TestCase
                 ->with(false, array('http://www.google.com', 'http://www.bing.com'));
         
         $subscriber = new Subscriber($adapter, $logger);
-        $subscriber->unsubscribeFrom(array('http://www.google.com', 'http://www.bing.com'));
-        
+        $success = $subscriber->unsubscribeFrom(array('http://www.google.com', 'http://www.bing.com'));
+        $this->assertFalse($success, 'Unsubscription not expected to be successful');
     }
 }

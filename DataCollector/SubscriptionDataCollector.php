@@ -57,6 +57,14 @@ class SubscriptionDataCollector extends DataCollector
         $this->data['unsubscribeAttempts'] = $this->logger->getUnsubscribeAttempts();
         $this->data['unsubscribeAttemptCount'] = $this->logger->countUnsubscribeAttempts();
     }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'superfeedr';
+    }
 
     /**
      * Get descriptions of the subscribe attempts made during this request.
@@ -76,9 +84,23 @@ class SubscriptionDataCollector extends DataCollector
         return $this->data['subscribeAttemptCount'];
     }
     
+    /**
+     * Get descriptions of the unsubscribe attempts made during this request.
+     * @return Hearsay\SuperfeedrBundle\Logger\UnsubscribeAttempt[] The 
+     * attempts.
+     */
     public function getUnsubscribeAttempts()
     {
         return $this->data['unsubscribeAttempts'];
+    }
+    
+    /**
+     * Get the number of unsubscribe attempts made during this request.
+     * @return integer The attempt count.
+     */
+    public function getUnsubscribeAttemptCount()
+    {
+        return $this->data['unsubscribeAttemptCount'];
     }
     
 }

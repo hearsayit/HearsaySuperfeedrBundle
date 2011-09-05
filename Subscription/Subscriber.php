@@ -66,6 +66,8 @@ class Subscriber implements SubscriberInterface
         
         // Log the attempt
         $this->logger->logSubscribeAttempt($successful, $urls, $digest);
+        
+        return $successful;
     }
     
     /**
@@ -83,6 +85,8 @@ class Subscriber implements SubscriberInterface
         
         // Log the attempt
         $this->logger->logUnsubscribeAttempt($successful, $urls);
+        
+        return $successful;
     }
 
 }
