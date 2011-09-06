@@ -39,7 +39,7 @@ Installation
         {
             return array(
                 // ...
-                new HearsaySuperfeedrBundle(),
+                new Hearsay\SuperfeedrBundle\HearsaySuperfeedrBundle(),
                 // ...
             );
         }
@@ -51,9 +51,9 @@ Installation
             username:           superfeedr_username
             password:           superfeedr_password
 
-  6. You'll probably want to set up a handler to process update notifications 
-     from Superfeedr.  The easiest way is to listen for the
-     ``Hearsay\SuperfeedrBundle\Events::onNotificationReceived`` event:
+  6. To do anything interesting, you'll probably want to set up a handler to 
+     process update notifications from Superfeedr.  The easiest way is to listen
+     for the ``Hearsay\SuperfeedrBundle\Events::onNotificationReceived`` event:
      
         # app/config/config.yml
         services:
