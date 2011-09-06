@@ -2,9 +2,10 @@ Introduction
 ============
 
 This bundle enables integration with the [Superfeedr](http://www.superfeedr.com)
-XMPP API.  It provides commands for subscribing/unsubscribing to resources and
-receiving content updates over XMPP.  It uses Nathan Fritz's XMPPHP to handle
-communication with Superfeedr.
+[XMPP API](http://superfeedr.com/documentation#xmpp_pubsub).  It provides 
+commands for subscribing/unsubscribing to resources and receiving content 
+updates over XMPP.  It uses Nathan Fritz's XMPPHP to handle communication with 
+Superfeedr.
 
 Installation
 ============
@@ -23,6 +24,11 @@ Installation
         $loader->registerNamespaces(array(
             // ...
             'Hearsay' => __DIR__.'/../vendor/bundles',
+            // ...
+        ));
+        $loader->registerPrefixes(array(
+            // ...
+            'XMPPHP_'          => __DIR__.'/../vendor/xmpphp',
             // ...
         ));
 
@@ -45,6 +51,20 @@ Installation
             username:           superfeedr_username
             password:           superfeedr_password
 
+  6. You'll probably want to set up a handler to process update notifications 
+     from Superfeedr.  The easiest way is to listen for the
+     ``Hearsay\SuperfeedrBundle\Events::onNotificationReceived`` event:
+     
+        # app/config/config.yml
+        services:
+            my_application.superfeedr_notification_handler:
+                # ...
+                tags:
+                    - { name: kernel.event_listener, event: onNotificationReceived, method: handleNotification }
+
+     The listener receives an instance of 
+     ``Hearsay\SuperfeedrBundle\Event\NotificationReceivedEvent``.
+
 Usage
 =====
 
@@ -54,8 +74,8 @@ Typical usage is through the command line:
         $ app/console superfeedr:unsubscribe http://superfeedr.com/dummy.xml
         $ app/console superfeedr:listen
 
-To debug full payloads or suppress all output, the --verbose or --quiet options
-(respectively) can be passed to ``superfeedr:listen``.
+To debug full payloads or suppress all output, the ``--verbose`` or ``--quiet``
+options (respectively) can be passed to ``superfeedr:listen``.
 
 Interaction services are also available in the DIC:
 
@@ -109,4 +129,4 @@ result in timeouts under normal circumstances when notifications are simply
 sparse.  Used in combination with a service supervisor like 
 [daemontools](http://cr.yp.to/daemontools.html)' ``supervise``, however, this 
 can be a good way to ensure that your production listener doesn't hang up
-indefinitely.
+indefinitely due to network hiccups.
