@@ -44,21 +44,17 @@ class SubscriptionAdapterTest extends \PHPUnit_Framework_TestCase
         
         // Order is important here
         $xmpp->expects($this->at(0))
-                ->method('isConnected')
-                ->will($this->returnValue(true));
+                ->method('connectAndStartSession');
         $xmpp->expects($this->at(1))
-                ->method('isSessionStarted')
-                ->will($this->returnValue(true));
-        $xmpp->expects($this->at(2))
                 ->method('getId')
                 ->will($this->returnValue(3));
-        $xmpp->expects($this->at(3))
+        $xmpp->expects($this->at(2))
                 ->method('addIdHandler')
                 ->with(3, 'handleResponse', $this->isInstanceOf('Hearsay\SuperfeedrBundle\Subscription\SubscriptionAdapter'));
-        $xmpp->expects($this->at(4))
+        $xmpp->expects($this->at(3))
                 ->method('send')
                 ->with($sent);
-        $xmpp->expects($this->at(5))
+        $xmpp->expects($this->at(4))
                 ->method('processUntil')
                 ->with('handle_subscription', 30)
                 ->will($this->returnCallback(function() use ($received, $adapter) {

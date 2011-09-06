@@ -144,7 +144,7 @@ PAY;
      */
     public function handleEventForTestNotificationParsed($eventName, NotificationReceivedEvent $event)
     {
-        $this->assertEquals(Events::NOTIFICATION_RECEIVED, $eventName);
+        $this->assertEquals(Events::onNotificationReceived, $eventName);
         $this->assertFalse($event->isDigest());
         $this->assertEquals('http://superfeedr.com/dummy.xml', $event->getResourceUrl());
         $this->assertEquals(4, \count($event->getItems()));

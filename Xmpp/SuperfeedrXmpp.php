@@ -143,6 +143,26 @@ class SuperfeedrXmpp extends \XMPPHP_XMPP
     }
 
     /**
+     * Convenience method to check our current connection and session-started
+     * state, and perform both of these actions if appropriate.  Does not
+     * reconnect or restart the session.
+     * @param integer $timeout Timeout for both operations.
+     * @param boolean $persistent Persistence flag for the connect operation.
+     * @param boolean $sendinit Init flag for the connect operation.
+     */
+    public function connectAndStartSession($timeout = 30, $persistent = false, $sendinit = true)
+    {
+        // Connect and start session
+        if (!($this->isConnected())) {
+            // We enforce a positive timeout on the connection
+            $this->connect($timeout > 0 ? $timeout : 30, $persistent, $sendinit);
+        }
+        if (!($this->isSessionStarted())) {
+            $this->processUntil(array('session_start', 'end_stream'), $timeout);
+        }
+    }
+    
+    /**
      * Custom hacky buffer-complete check to avoid potential infinite loops
      * in the standard XMPPHP library.
      * 

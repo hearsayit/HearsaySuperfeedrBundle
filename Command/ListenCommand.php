@@ -51,16 +51,19 @@ class ListenCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $receiver = $this->getContainer()->get('hearsay_superfeedr.listener');
-        $output->writeln('Listening for messages...');
+        /* @var $listener \Hearsay\SuperfeedrBundle\Listening\ListenerInterface */
+        $listener = $this->getContainer()->get('hearsay_superfeedr.listener');
+        $listener->addNotificationHandler(new NotificationPrinter($output));
+
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
+            $output->writeln('');
+            $output->writeln('<info>Listening for messages...</info>');
+            $output->writeln('');
+        }
+
         try {
-            $receiver->listen();
+            $listener->listen();
         } catch (\Exception $exception) {
-            if ($exception instanceof \Hearsay\SuperfeedrBundle\Exception\TimeoutException) {
-                $this->getContainer()->get('monolog.logger.superfeedr')->warn('Superfeedr listener timed out.');
-            } else {
-                $this->getContainer()->get('monolog.logger.superfeedr')->err('Caught ' . \get_class($exception) . ' while listening: ' . $exception->getMessage());
-            }
             if ($input->getOption('die')) {
                 // @codeCoverageIgnoreStart
                 die($exception->getMessage() . "\n");
@@ -69,7 +72,10 @@ class ListenCommand extends ContainerAwareCommand
                 throw $exception;
             }
         }
-        $output->writeln('Finished listening.');
+        
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
+            $output->writeln('<info>Finished listening.</info>');
+        }
     }
 
 }

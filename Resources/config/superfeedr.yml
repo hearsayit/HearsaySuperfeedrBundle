@@ -64,9 +64,14 @@ services:
         
     hearsay_superfeedr.listener:
         class: %hearsay_superfeedr.listener.class%
-        methods:
+        arguments:
+            - '@hearsay_superfeedr.xmpp'
+            - '@monolog.logger'
+        calls:
             - ['addNotificationHandler', ['@hearsay_superfeedr.event_handler']]
             - ['setTimeout', [%hearsay_superfeedr.listener_timeout%]]
+        tags:
+            - { name: monolog.logger, channel: superfeedr }
     hearsay_superfeedr.event_handler:
         class: Hearsay\SuperfeedrBundle\Listening\EventHandler
         arguments:

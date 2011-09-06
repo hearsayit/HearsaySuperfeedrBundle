@@ -79,15 +79,7 @@ class Listener implements ListenerInterface
      */
     public function listen()
     {
-        // Connect if necessary
-        if (!($this->xmpp->isConnected())) {
-            $this->xmpp->connect($this->timeout);
-        }
-
-        // Start session if necessary
-        if (!($this->xmpp->isSessionStarted())) {
-            $this->xmpp->processUntil(array('session_start', 'end_stream'), $this->timeout);
-        }
+        $this->xmpp->connectAndStartSession($this->timeout);
 
         // Add the message handler
         $this->xmpp->addXPathHandler('{jabber:client}message/{http://jabber.org/protocol/pubsub#event}event/{http://superfeedr.com/xmpp-pubsub-ext}status', 'handleMessage', $this);
@@ -96,6 +88,7 @@ class Listener implements ListenerInterface
         while (!$this->xmpp->isDisconnected()) {
             $results = $this->xmpp->processUntil('message', $this->timeout);
             if (count($results) === 0) {
+                $this->logger->warn(sprintf('Superfeedr listener timed out (no messages for %d seconds).', $this->timeout));
                 throw new Exception\TimeoutException(sprintf('No messages for %d seconds.  The connection may have been lost.', $this->timeout));
             }
         }

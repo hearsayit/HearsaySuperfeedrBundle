@@ -112,13 +112,7 @@ class SubscriptionAdapter implements SubscriptionAdapterInterface
      */
     private function subscribeOrUnsubscribe($subscribeNode, array $urls, $digest)
     {
-        // Connect and start session
-        if (!($this->xmpp->isConnected())) {
-            $this->xmpp->connect($this->timeout);
-        }
-        if (!($this->xmpp->isSessionStarted())) {
-            $this->xmpp->processUntil(array('session_start', 'end_stream'), $this->timeout);
-        }
+        $this->xmpp->connectAndStartSession($this->timeout);
         
         $jid = $this->xmpp->user . '@' . $this->xmpp->server;
         $id = $this->xmpp->getId();
